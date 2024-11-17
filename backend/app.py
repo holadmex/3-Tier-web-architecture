@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import bcrypt
 from dotenv import load_dotenv
+from flask_migrate import Migrate  # <-- Make sure to import Migrate
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,7 +15,12 @@ CORS(app)
 # Load configuration from environment variables
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# Initialize SQLAlchemy
 db = SQLAlchemy(app)
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)  # <-- Initialize Migrate
 
 # User model
 class User(db.Model):
@@ -68,6 +74,6 @@ def get_products():
 # Entry point
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
-        initialize_products()
+        db.create_all()  # This will create tables if they do not exist
+        initialize_products()  # This initializes products if they are not in the database
     app.run(host='0.0.0.0', port=5000, debug=True)

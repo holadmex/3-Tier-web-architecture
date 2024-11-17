@@ -1,5 +1,8 @@
-Flask==2.3.2
-Flask-Cors==3.0.10
-Flask-SQLAlchemy==3.0.3
-bcrypt==4.0.1
-python-dotenv==1.0.0
+Flask
+Flask-Cors
+Flask-SQLAlchemy
+bcrypt
+python-dotenv
+Flask-Migrate
+psycopg2-binary
+
