@@ -56,7 +56,7 @@ pipeline {
                     -Dsonar.login=$SONAR_TOKEN \
                     -Dsonar.host.url=https://sonarcloud.io \
                     -Dsonar.sourceEncoding=UTF-8 \
-                    -Dsonar.sources=src \
+                    -Dsonar.sources=frontend \
                     -Dsonar.exclusions=**/test/**,**/*.spec.js
                     '''
                 }
