@@ -72,6 +72,14 @@ pipeline {
                 }
             }
         }
+        stage('Run Trivy Scan') {
+            steps {
+                script {
+                    // Scan the Docker image for vulnerabilities
+                    sh "trivy image --severity HIGH,CRITICAL ${$FRONTEND_IMAGE} || exit 1"
+                }
+            }
+        }
     }
     post {
         always {
