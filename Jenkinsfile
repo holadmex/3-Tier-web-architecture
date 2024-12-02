@@ -35,21 +35,20 @@ pipeline {
         }
         stage('SonarCloud Analysis') {
             steps {
-                script {
-                    withSonarQubeEnv('SonarCloud') {
-                        sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                        -Dsonar.organization=$SONAR_ORG \
-                        -Dsonar.login=$SONAR_TOKEN \
-                        -Dsonar.host.url=https://sonarcloud.io \
-                        -Dsonar.sourceEncoding=UTF-8 \
-                        -Dsonar.sources=src \
-                        -Dsonar.exclusions=**/test/**,**/*.spec.js
-                        """
-                    }
+                withSonarQubeEnv('SonarCloud') {
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=3-Tier-web-architecture \
+                    -Dsonar.organization=ecs-ci-cd \
+                    -Dsonar.login=$SONAR_TOKEN \
+                    -Dsonar.host.url=https://sonarcloud.io \
+                    -Dsonar.sourceEncoding=UTF-8 \
+                    -Dsonar.sources=src \
+                    -Dsonar.exclusions=**/test/**,**/*.spec.js
+                    '''
                 }
             }
         }
     }
 }
+
