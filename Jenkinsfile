@@ -33,6 +33,17 @@ pipeline {
                 }
             }
         }
+        stage('Set Up SonarScanner') {
+            steps {
+                script {
+                    sh '''
+                    export PATH=$PATH:/opt/sonar-scanner/bin
+                    echo $PATH
+                    which sonar-scanner
+                    '''
+                }
+            }
+        }
         stage('SonarCloud Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
