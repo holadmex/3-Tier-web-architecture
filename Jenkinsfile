@@ -9,6 +9,8 @@ pipeline {
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
         SONAR_TOKEN = credentials('sonar-login') // Add token in Jenkins credentials
+        SONAR_SCANNER_PATH = '/opt/sonar-scanner/bin'
+        PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin:${SONAR_SCANNER_PATH}"
     }
 
     stages {
