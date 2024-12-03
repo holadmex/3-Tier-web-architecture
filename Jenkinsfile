@@ -4,7 +4,9 @@ pipeline {
     environment {
         FRONTEND_IMAGE = "your-frontend-image:latest"
         DOCKER_IMAGE = "your-image:latest"
-        ECR_REPO = "your-ecr-repo"
+        AWS_ACCESS_KEY_ID = credentials('aws-key') // Jenkins credential ID for access key
+        AWS_SECRET_ACCESS_KEY = credentials('aws-key') // Jenkins credential ID for secret key
+        ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/frontend"
         AWS_REGION = "us-east-1"
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
@@ -77,6 +79,18 @@ pipeline {
                 script {
                     // Scan the Docker image for vulnerabilities
                     sh "trivy image --severity HIGH,CRITICAL $FRONTEND_IMAGE || exit 1"
+                }
+            }
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                script {
+                    // Authenticate Docker to ECR
+                    sh """
+                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+                    docker tag $FRONTEND_IMAGE $ECR_REPO:$BUILD_NUMBER
+                    docker push $ECR_REPO:$BUILD_NUMBER
+                    """
                 }
             }
         }
