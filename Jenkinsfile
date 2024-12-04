@@ -92,23 +92,23 @@ pipeline {
                     try {
                         // Fetch current task definition
                         def ecsTaskDefinition = sh(script: "aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION", returnStdout: true).trim()
-
+        
                         // Parse and update the image in container definitions
                         def updatedTaskDefinition = sh(script: """
-                            echo '$ecsTaskDefinition' | jq '.taskDefinition | .containerDefinitions[0].image = "$ECR_REPO:$BUILD_NUMBER" | .containerDefinitions'
+                            echo '$ecsTaskDefinition' | jq -r '.taskDefinition.containerDefinitions | map(if .name == "frontend" then .image = "$ECR_REPO:$BUILD_NUMBER" else . end)' | jq -s .
                         """, returnStdout: true).trim()
-
+        
                         // Register the new task definition
                         def newTaskDefinition = sh(script: """
                             aws ecs register-task-definition --family $ECS_TASK_DEFINITION \
-                                --container-definitions "$updatedTaskDefinition"
+                                --container-definitions '$updatedTaskDefinition'
                         """, returnStdout: true).trim()
-
+        
                         // Extract the new revision number
                         def newTaskRevision = sh(script: """
                             echo '$newTaskDefinition' | jq -r '.taskDefinition.revision'
                         """, returnStdout: true).trim()
-
+        
                         // Update ECS service with the new task definition revision
                         sh """
                             aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE \
@@ -118,10 +118,11 @@ pipeline {
                         echo "Error during ECS service update: ${e.message}"
                         currentBuild.result = 'FAILURE'
                         throw e
-            }
+                    }
         }
     }
 }
+
 
   }
     post {
