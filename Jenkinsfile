@@ -93,21 +93,26 @@ pipeline {
                     sh """
                     ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition')
                     new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
-                    updated_task_definition=\$(echo \$ecs_task_definition | jq ".containerDefinitions = \$new_container_definitions")
+                    updated_task_definition=\$(echo \$ecs_task_definition | jq ". | {family, containerDefinitions: \$new_container_definitions, taskRoleArn, executionRoleArn, networkMode, requiresCompatibilities: [\\"FARGATE\\"], cpu: \\"512\\", memory: \\"1024\\"}")
                     new_task_definition_name=\$(echo \$updated_task_definition | jq -r '.family')
                     
                     # Register the new task definition
                     task_definition_revision=\$(aws ecs register-task-definition \
                         --family \$new_task_definition_name \
-                        --container-definitions "\$new_container_definitions" | jq -r '.taskDefinition.taskDefinitionArn')
+                        --container-definitions "\$new_container_definitions" \
+                        --requires-compatibilities "FARGATE" \
+                        --cpu "512" \
+                        --memory "1024" \
+                        --network-mode "awsvpc" \
+                        --task-role-arn \$(echo \$ecs_task_definition | jq -r '.taskRoleArn') \
+                        --execution-role-arn \$(echo \$ecs_task_definition | jq -r '.executionRoleArn') | jq -r '.taskDefinition.taskDefinitionArn')
                     
-                    # Get the ECS service and update it with the new task definition revision
+                    # Update the ECS service with the new task definition revision
                     aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
                     """
         }
     }
 }
-
   }
     post {
         always {
