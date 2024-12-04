@@ -8,8 +8,8 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('aws-key') // Jenkins credential ID for secret key
         ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/frontend"
         ECS_TASK_DEFINITION = "task-web-app"
-        cluster =  "Full-stack-web-app"
-        service = "web-app-service"
+        ECS_CLUSTER =  "Full-stack-web-app"
+        ECS_SERVICE = "web-app-service"
         AWS_REGION = "us-east-1"
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
@@ -86,13 +86,42 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to ecs') {
-          steps {
-        withAWS(credentials: 'aws-key', region: 'us-east-1') {
-          sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+        stage('Update ECS Service') {
+            steps {
+                script {
+                    try {
+                        // Fetch current task definition
+                        def ecsTaskDefinition = sh(script: "aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION", returnStdout: true).trim()
+
+                        // Parse and update the image in container definitions
+                        def updatedTaskDefinition = sh(script: """
+                            echo '$ecsTaskDefinition' | jq '.taskDefinition | .containerDefinitions[0].image = "$ECR_REPO:$BUILD_NUMBER" | .containerDefinitions'
+                        """, returnStdout: true).trim()
+
+                        // Register the new task definition
+                        def newTaskDefinition = sh(script: """
+                            aws ecs register-task-definition --family $ECS_TASK_DEFINITION \
+                                --container-definitions "$updatedTaskDefinition"
+                        """, returnStdout: true).trim()
+
+                        // Extract the new revision number
+                        def newTaskRevision = sh(script: """
+                            echo '$newTaskDefinition' | jq -r '.taskDefinition.revision'
+                        """, returnStdout: true).trim()
+
+                        // Update ECS service with the new task definition revision
+                        sh """
+                            aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE \
+                                --task-definition $ECS_TASK_DEFINITION:$newTaskRevision
+                        """
+                    } catch (Exception e) {
+                        echo "Error during ECS service update: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+            }
         }
-      }
-     }
+    }
+}
 
   }
     post {
