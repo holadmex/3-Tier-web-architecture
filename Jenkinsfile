@@ -90,32 +90,32 @@ pipeline {
             steps {
                 script {
                     sh """
-                    # Fetch existing task definition
+                    set -e  # Exit on error
+        
+                    # Fetch the current task definition
                     ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition')
         
-                    # Update container definition with new image
-                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" | .memory = 1024 else . end)")
+                    # Update the container definition with the new image
+                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
         
-                    # Prepare updated task definition with Fargate settings
-                    task_role_arn=\$(echo \$ecs_task_definition | jq -r '.taskRoleArn // empty')
-                    execution_role_arn=\$(echo \$ecs_task_definition | jq -r '.executionRoleArn // empty')
-                    updated_task_definition=\$(echo \$ecs_task_definition | jq ". | {family, containerDefinitions: \$new_container_definitions, networkMode, requiresCompatibilities: [\\"FARGATE\\"], cpu: \\"1024\\", memory: \\"3072\\"}")
+                    # Build the updated task definition JSON
+                    updated_task_definition=\$(jq -n --argjson task "\$ecs_task_definition" --argjson containers "\$new_container_definitions" '{
+                        family: $task.family,
+                        containerDefinitions: $containers,
+                        networkMode: $task.networkMode,
+                        requiresCompatibilities: ["FARGATE"],
+                        cpu: "1024",
+                        memory: "3072",
+                        taskRoleArn: $task.taskRoleArn,
+                        executionRoleArn: $task.executionRoleArn
+                    }')
         
-                    # Register updated task definition
-                    task_definition_command="aws ecs register-task-definition --family \$(echo \$updated_task_definition | jq -r '.family') --container-definitions \"\$new_container_definitions\" --requires-compatibilities FARGATE --cpu 1024 --memory 3072 --network-mode awsvpc"
+                    # Register the updated task definition
+                    task_definition_revision=\$(echo "\$updated_task_definition" | aws ecs register-task-definition \
+                        --cli-input-json file://<(cat) \
+                        | jq -r '.taskDefinition.taskDefinitionArn')
         
-                    # Append optional roles if present
-                    if [ -n "\$task_role_arn" ]; then
-                        task_definition_command+=" --task-role-arn \$task_role_arn"
-                    fi
-                    if [ -n "\$execution_role_arn" ]; then
-                        task_definition_command+=" --execution-role-arn \$execution_role_arn"
-                    fi
-        
-                    # Execute task registration
-                    task_definition_revision=\$(\$task_definition_command | jq -r '.taskDefinition.taskDefinitionArn')
-        
-                    # Update ECS service
+                    # Update the ECS service to use the new task definition revision
                     aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
                     """
         }
