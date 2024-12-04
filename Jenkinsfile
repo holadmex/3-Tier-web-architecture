@@ -92,12 +92,15 @@ pipeline {
                     try {
                         // Fetch current task definition
                         def ecsTaskDefinition = sh(script: "aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION", returnStdout: true).trim()
-
+        
+                        // Define the execution role ARN (replace with your actual role ARN)
+                        def executionRoleArn = "arn:aws:iam::429841094792:role/todo-app-role"
+        
                         // Parse and update the image in container definitions
                         def updatedTaskDefinition = sh(script: """
                             echo '$ecsTaskDefinition' | jq -r '.taskDefinition.containerDefinitions | map(if .name == "frontend" then .image = "$ECR_REPO:$BUILD_NUMBER" else . end)' | jq -s '.[0]'
                         """, returnStdout: true).trim()
-
+        
                         // Register the new task definition for FARGATE with the proper compatibility and network mode
                         def newTaskDefinition = sh(script: """
                             aws ecs register-task-definition --family $ECS_TASK_DEFINITION \
@@ -105,14 +108,15 @@ pipeline {
                                 --requires-compatibilities FARGATE \
                                 --network-mode awsvpc \
                                 --cpu 1024 \
-                                --memory 3072
+                                --memory 3072 \
+                                --execution-role-arn $executionRoleArn
                         """, returnStdout: true).trim()
-
+        
                         // Extract the new revision number
                         def newTaskRevision = sh(script: """
                             echo '$newTaskDefinition' | jq -r '.taskDefinition.revision'
                         """, returnStdout: true).trim()
-
+        
                         // Update ECS service with the new task definition revision
                         sh """
                             aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE \
