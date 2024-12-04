@@ -40,17 +40,6 @@ pipeline {
                 }
             }
         }
-        stage('Set Up SonarScanner') {
-            steps {
-                script {
-                    sh '''
-                    export PATH=$PATH:/opt/sonar-scanner/bin
-                    echo $PATH
-                    which sonar-scanner
-                    '''
-                }
-            }
-        }
         stage('SonarCloud Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
@@ -100,39 +89,24 @@ pipeline {
         stage('Update ECS Service') {
             steps {
                 script {
+                    // Update the ECS task definition and ECS service with the new image
                     sh """
-                    # Fetch the current task definition
-                    ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq -c '.taskDefinition')
-        
-                    # Extract necessary fields for registering a new task definition
-                    task_family=\$(echo \$ecs_task_definition | jq -r '.family')
-                    execution_role_arn=\$(echo \$ecs_task_definition | jq -r '.executionRoleArn')
-                    requires_compatibilities=\$(echo \$ecs_task_definition | jq -c '.requiresCompatibilities')
-                    network_mode=\$(echo \$ecs_task_definition | jq -r '.networkMode')
-                    cpu=\$(echo \$ecs_task_definition | jq -r '.cpu')
-                    memory=\$(echo \$ecs_task_definition | jq -r '.memory')
-                    container_definitions=\$(echo \$ecs_task_definition | jq -c '.containerDefinitions | map(if .name == "frontend" then .image = "$ECR_REPO:$BUILD_NUMBER" else . end)')
-        
-                    # Register the updated task definition
+                    ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition')
+                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
+                    updated_task_definition=\$(echo \$ecs_task_definition | jq ".containerDefinitions = \$new_container_definitions")
+                    new_task_definition_name=\$(echo \$updated_task_definition | jq -r '.family')
+                    
+                    # Register the new task definition
                     task_definition_revision=\$(aws ecs register-task-definition \
-                        --family "\$task_family" \
-                        --execution-role-arn "\$execution_role_arn" \
-                        --requires-compatibilities "\$requires_compatibilities" \
-                        --network-mode "\$network_mode" \
-                        --cpu "\$cpu" \
-                        --memory "\$memory" \
-                        --container-definitions "\$container_definitions" \
-                        | jq -r '.taskDefinition.taskDefinitionArn')
-        
-                    echo "Registered new task definition: \$task_definition_revision"
-        
-                    # Update the ECS service with the new task definition
-                    aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition "\$task_definition_revision"
+                        --family \$new_task_definition_name \
+                        --container-definitions "\$new_container_definitions" | jq -r '.taskDefinition.taskDefinitionArn')
+                    
+                    # Get the ECS service and update it with the new task definition revision
+                    aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
                     """
-                }
-            }
         }
-
+    }
+}
 
   }
     post {
