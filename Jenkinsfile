@@ -98,10 +98,14 @@ pipeline {
                             echo '$ecsTaskDefinition' | jq -r '.taskDefinition.containerDefinitions | map(if .name == "frontend" then .image = "$ECR_REPO:$BUILD_NUMBER" else . end)' | jq -s '.[0]'
                         """, returnStdout: true).trim()
         
-                        // Register the new task definition
+                        // Register the new task definition for FARGATE with the proper compatibility and network mode
                         def newTaskDefinition = sh(script: """
                             aws ecs register-task-definition --family $ECS_TASK_DEFINITION \
-                                --container-definitions '$updatedTaskDefinition'
+                                --container-definitions '$updatedTaskDefinition' \
+                                --requires-compatibilities FARGATE \
+                                --network-mode awsvpc \
+                                --cpu 1024 \
+                                --memory 2048
                         """, returnStdout: true).trim()
         
                         // Extract the new revision number
@@ -112,7 +116,8 @@ pipeline {
                         // Update ECS service with the new task definition revision
                         sh """
                             aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE \
-                                --task-definition $ECS_TASK_DEFINITION:$newTaskRevision
+                                --task-definition $ECS_TASK_DEFINITION:$newTaskRevision \
+                                --launch-type FARGATE
                         """
                     } catch (Exception e) {
                         echo "Error during ECS service update: ${e.message}"
@@ -122,6 +127,7 @@ pipeline {
         }
     }
 }
+
   }
     post {
         always {
