@@ -102,8 +102,8 @@ pipeline {
                     updated_task_definition=\$(echo \$ecs_task_definition | jq ". | {family, containerDefinitions: \$new_container_definitions, networkMode, requiresCompatibilities: [\\"FARGATE\\"], cpu: \\"1024\\", memory: \\"3072\\"}")
         
                     # Register updated task definition
-                    task_definition_command="aws ecs register-task-definition --family \$(echo \$updated_task_definition | jq -r '.family') --container-definitions \"\$new_container_definitions\" --requires-compatibilities \"FARGATE\" --cpu \"1024\" --memory \"3072\" --network-mode \"awsvpc\""
-                    
+                    task_definition_command="aws ecs register-task-definition --family \$(echo \$updated_task_definition | jq -r '.family') --container-definitions \"\$new_container_definitions\" --requires-compatibilities FARGATE --cpu 1024 --memory 3072 --network-mode awsvpc"
+        
                     # Append optional roles if present
                     if [ -n "\$task_role_arn" ]; then
                         task_definition_command+=" --task-role-arn \$task_role_arn"
@@ -113,11 +113,11 @@ pipeline {
                     fi
         
                     # Execute task registration
-                    task_definition_revision=\$(${task_definition_command} | jq -r '.taskDefinition.taskDefinitionArn')
-                    
+                    task_definition_revision=\$(\$task_definition_command | jq -r '.taskDefinition.taskDefinitionArn')
+        
                     # Update ECS service
                     aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
-            """
+                    """
         }
     }
 }
