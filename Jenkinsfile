@@ -95,7 +95,7 @@ pipeline {
         
                         // Parse and update the image in container definitions
                         def updatedTaskDefinition = sh(script: """
-                            echo '$ecsTaskDefinition' | jq -r '.taskDefinition.containerDefinitions | map(if .name == "frontend" then .image = "$ECR_REPO:$BUILD_NUMBER" else . end)' | jq -s .
+                            echo '$ecsTaskDefinition' | jq -r '.taskDefinition.containerDefinitions | map(if .name == "frontend" then .image = "$ECR_REPO:$BUILD_NUMBER" else . end)' | jq -s '.[0]'
                         """, returnStdout: true).trim()
         
                         // Register the new task definition
@@ -122,8 +122,6 @@ pipeline {
         }
     }
 }
-
-
   }
     post {
         always {
