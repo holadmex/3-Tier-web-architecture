@@ -8,8 +8,8 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('aws-key') // Jenkins credential ID for secret key
         ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/frontend"
         ECS_TASK_DEFINITION = "task-web-app"
-        ECS_CLUSTER =  "Full-stack-web-app"
-        ECS_SERVICE = "web-app-service"
+        cluster =  "Full-stack-web-app"
+        service = "web-app-service"
         AWS_REGION = "us-east-1"
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
@@ -86,41 +86,14 @@ pipeline {
                 }
             }
         }
-        stage('Update ECS Service') {
-            steps {
-                script {
-                    sh """
-                    set -e  # Exit on error
-        
-                    # Fetch the current task definition
-                    ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition')
-        
-                    # Update the container definition with the new image
-                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
-        
-                    # Build the updated task definition JSON
-                    updated_task_definition=\$(jq -n --argjson task "\$ecs_task_definition" --argjson containers "\$new_container_definitions" '{
-                        family: $task.family,
-                        containerDefinitions: $containers,
-                        networkMode: $task.networkMode,
-                        requiresCompatibilities: ["FARGATE"],
-                        cpu: "1024",
-                        memory: "3072",
-                        taskRoleArn: $task.taskRoleArn,
-                        executionRoleArn: $task.executionRoleArn
-                    }')
-        
-                    # Register the updated task definition
-                    task_definition_revision=\$(echo "\$updated_task_definition" | aws ecs register-task-definition \
-                        --cli-input-json file://<(cat) \
-                        | jq -r '.taskDefinition.taskDefinitionArn')
-        
-                    # Update the ECS service to use the new task definition revision
-                    aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
-                    """
+        stage('Deploy to ecs') {
+          steps {
+        withAWS(credentials: 'aws-key', region: 'us-east-1') {
+          sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
         }
-    }
-}
+      }
+     }
+
   }
     post {
         always {
