@@ -120,8 +120,7 @@ pipeline {
                         // Update ECS service with the new task definition revision
                         sh """
                             aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE \
-                                --task-definition $ECS_TASK_DEFINITION:$newTaskRevision \
-                                --launch-type FARGATE
+                                --task-definition $ECS_TASK_DEFINITION:$newTaskRevision
                         """
                     } catch (Exception e) {
                         echo "Error during ECS service update: ${e.message}"
@@ -131,6 +130,7 @@ pipeline {
         }
     }
 }
+
 
   }
     post {
