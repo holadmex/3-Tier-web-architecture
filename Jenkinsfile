@@ -102,23 +102,31 @@ pipeline {
                 script {
                     // Update the ECS task definition and ECS service with the new image
                     sh """
-                    ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition')
-                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
-                    updated_task_definition=\$(echo \$ecs_task_definition | jq ".containerDefinitions = \$new_container_definitions")
+                    # Fetch the current task definition
+                    ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq -c '.taskDefinition')
+        
+                    # Update the container definitions with the new image
+                    new_container_definitions=\$(echo \$ecs_task_definition | jq -c ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
+        
+                    # Generate the updated task definition
+                    updated_task_definition=\$(echo \$ecs_task_definition | jq -c ".containerDefinitions = \$new_container_definitions")
                     new_task_definition_name=\$(echo \$updated_task_definition | jq -r '.family')
-
-                    # Register the new task definition
+        
+                    # Register the new task definition and capture its ARN
                     task_definition_revision=\$(aws ecs register-task-definition \
-                        --family \$new_task_definition_name \
+                        --family "\$new_task_definition_name" \
                         --container-definitions "\$new_container_definitions" | jq -r '.taskDefinition.taskDefinitionArn')
-
-                    # Get the ECS service and update it with the new task definition revision
-                    aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
+        
+                    # Log the new task definition ARN for debugging
+                    echo "Registered new task definition: \$task_definition_revision"
+        
+                    # Update the ECS service with the new task definition
+                    aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition "\$task_definition_revision"
                     """
         }
     }
 }
-    }
+  }
     post {
         always {
             cleanWs()
