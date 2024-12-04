@@ -9,7 +9,7 @@ pipeline {
         ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/frontend"
         ECS_TASK_DEFINITION = "task-web-app"
         ECS_CLUSTER =  "full-stack-web-app"
-        $ECS_SERVICE = "web-app-service"
+        ECS_SERVICE = "web-app-service"
         AWS_REGION = "us-east-1"
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
