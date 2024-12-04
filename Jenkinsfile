@@ -7,9 +7,9 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('aws-key') // Jenkins credential ID for access key
         AWS_SECRET_ACCESS_KEY = credentials('aws-key') // Jenkins credential ID for secret key
         ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/frontend"
-        ECS_TASK_DEFINITION = task-web-app
-        ECS_CLUSTER =  full-stack-web-app
-        $ECS_SERVICE = web-app-service
+        ECS_TASK_DEFINITION = "task-web-app"
+        ECS_CLUSTER =  "full-stack-web-app"
+        $ECS_SERVICE = "web-app-service"
         AWS_REGION = "us-east-1"
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
@@ -106,12 +106,12 @@ pipeline {
                     new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
                     updated_task_definition=\$(echo \$ecs_task_definition | jq ".containerDefinitions = \$new_container_definitions")
                     new_task_definition_name=\$(echo \$updated_task_definition | jq -r '.family')
-                    
+
                     # Register the new task definition
                     task_definition_revision=\$(aws ecs register-task-definition \
                         --family \$new_task_definition_name \
                         --container-definitions "\$new_container_definitions" | jq -r '.taskDefinition.taskDefinitionArn')
-                    
+
                     # Get the ECS service and update it with the new task definition revision
                     aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
                     """
