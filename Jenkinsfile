@@ -89,30 +89,34 @@ pipeline {
         stage('Update ECS Service') {
             steps {
                 script {
-                    // Update the ECS task definition and ECS service with the new image
                     sh """
+                    # Fetch existing task definition
                     ecs_task_definition=\$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION | jq '.taskDefinition')
-                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" else . end)")
-                    updated_task_definition=\$(echo \$ecs_task_definition | jq ". | {family, containerDefinitions: \$new_container_definitions, taskRoleArn, executionRoleArn, networkMode, requiresCompatibilities: [\\"FARGATE\\"], cpu: \\"512\\", memory: \\"1024\\"}")
-                    new_task_definition_name=\$(echo \$updated_task_definition | jq -r '.family')
                     
-                    # Register the new task definition
+                    # Update container definition with new image
+                    new_container_definitions=\$(echo \$ecs_task_definition | jq ".containerDefinitions | map(if .name == \\"frontend\\" then .image = \\"$ECR_REPO:$BUILD_NUMBER\\" | .memory = 1024 else . end)")
+                    
+                    # Prepare updated task definition with Fargate settings
+                    updated_task_definition=\$(echo \$ecs_task_definition | jq ". | {family, containerDefinitions: \$new_container_definitions, taskRoleArn, executionRoleArn, networkMode, requiresCompatibilities: [\\"FARGATE\\"], cpu: \\"1024\\", memory: \\"3072\\"}")
+                    
+                    # Register updated task definition
                     task_definition_revision=\$(aws ecs register-task-definition \
-                        --family \$new_task_definition_name \
+                        --family \$(echo \$updated_task_definition | jq -r '.family') \
                         --container-definitions "\$new_container_definitions" \
                         --requires-compatibilities "FARGATE" \
-                        --cpu "512" \
-                        --memory "1024" \
+                        --cpu "1024" \
+                        --memory "3072" \
                         --network-mode "awsvpc" \
-                        --task-role-arn \$(echo \$ecs_task_definition | jq -r '.taskRoleArn') \
-                        --execution-role-arn \$(echo \$ecs_task_definition | jq -r '.executionRoleArn') | jq -r '.taskDefinition.taskDefinitionArn')
+                        --task-role-arn \$(echo \$ecs_task_definition | jq -r '.taskRoleArn // empty') \
+                        --execution-role-arn \$(echo \$ecs_task_definition | jq -r '.executionRoleArn // empty') | jq -r '.taskDefinition.taskDefinitionArn')
                     
-                    # Update the ECS service with the new task definition revision
+                    # Update ECS service
                     aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition \$task_definition_revision
                     """
         }
     }
 }
+
   }
     post {
         always {
