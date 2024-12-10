@@ -83,8 +83,8 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          IMAGE_TAG: ${GITHUB_SHA::3}
         run: |
-          IMAGE_TAG="${{ github.sha[:3] }}"
           # Fetch current task definition
           ecsTaskDefinition=$(aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }})
 
