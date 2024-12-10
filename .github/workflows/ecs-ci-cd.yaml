@@ -40,3 +40,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
+  
+  docker build:
+    name: Build Frontend Docker Image
+    needs: sonarcloud
+      run: |
+        docker build -t ${{ env.FRONTEND_IMAGE }} -f frontend/Dockerfile frontend/
