@@ -21,12 +21,19 @@ jobs:
       - name: Clone Repository
         run: |
           git clone https://github.com/holadmex/3-Tier-web-architecture.git
+      - name: Install Sonar Scanner
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip
+          unzip sonar-scanner-cli-4.8.0.2856.zip
+          sudo mv sonar-scanner-4.8.0.2856 /opt/sonar-scanner
+          export PATH=$PATH:/opt/sonar-scanner/bin
+          echo sonar-scanner --version
 
       - name: SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          SonarCloud \
+          sonar-scanner \
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
             -Dsonar.organization=${{ env.SONAR_ORG }} \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
