@@ -87,30 +87,30 @@ jobs:
 
       - name: Update ECS Task Definition
         run: |
-          # Fetch the current task definition
-          aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-            > task-definition.json
-
-          # Prepare updated task definition
-          jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_SHA::7}" \
-            '.taskDefinition.containerDefinitions[].image = $IMAGE |
-             del(.taskDefinition.taskDefinitionArn, 
-                 .taskDefinition.revision, 
-                 .taskDefinition.status, 
-                 .taskDefinition.requiresAttributes, 
-                 .taskDefinition.compatibilities,
-                 .taskDefinition.tags)' \
-            task-definition.json > updated-task-definition.json
-
-          # Register the updated task definition
+          # Register the updated task definition directly
           newTaskDefinition=$(aws ecs register-task-definition \
             --family ${{ env.ECS_TASK_DEFINITION }} \
-            --container-definitions "$(cat updated-task-definition.json)" \
+            --container-definitions '[{
+              "name": "frontend-container",
+              "image": "${{ secrets.ECR_REPO }}:${GITHUB_SHA::7}",
+              "cpu": 1024,
+              "memory": 3072,
+              "essential": true,
+              "portMappings": [{
+                "containerPort": 80,
+                "hostPort": 80
+              }],
+              "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                  "awslogs-group": "/ecs/frontend",
+                  "awslogs-region": "${{ env.AWS_REGION }}",
+                  "awslogs-stream-prefix": "frontend"
+                }
+              }
+            }]' \
             --requires-compatibilities FARGATE \
             --network-mode awsvpc \
-            --cpu 1024 \
-            --memory 3072 \
             --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
 
           # Extract revision
