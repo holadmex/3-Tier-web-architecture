@@ -11,6 +11,9 @@ env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
   AWS_REGION: us-east-1
+  ECS_TASK_DEFINITION: task-web-app
+  ECS_CLUSTER: Full-stack-web-app
+  ECS_SERVICE: web-app-service
 
 jobs:
   build-and-deploy:
@@ -75,3 +78,33 @@ jobs:
         run: |
           docker tag your-frontend-image:${GITHUB_SHA::3} ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
           docker push ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
+          
+      - name: Update ECS Service
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Fetch current task definition
+          ecsTaskDefinition=$(aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }})
+
+          # Update the image in container definitions
+          updatedTaskDefinition=$(echo $ecsTaskDefinition | jq -r '.taskDefinition.containerDefinitions | map(if .name == "frontend" then .image = "${{ secret.ECR_REPO }}:${GITHUB_SHA::3}" else . end) | .[]' | jq -s)
+
+          # Register the updated task definition
+          newTaskDefinition=$(aws ecs register-task-definition \
+            --family ${{ env.ECS_TASK_DEFINITION }} \
+            --container-definitions "$updatedTaskDefinition" \
+            --requires-compatibilities FARGATE \
+            --network-mode awsvpc \
+            --cpu 1024 \
+            --memory 3072 \
+            --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
+
+          # Extract revision
+          newTaskRevision=$(echo $newTaskDefinition | jq -r '.taskDefinition.revision')
+
+          # Update ECS service
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$newTaskRevision
