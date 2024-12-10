@@ -10,6 +10,7 @@ on:
 env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
+  SONAR_SCANNER_VERSION: 5.0.1.3006
 
 jobs:
   sonarcloud:
@@ -23,6 +24,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven'  # Optional: caches Maven dependencies
 
       - name: Verify Java Version
         run: java -version
@@ -33,22 +35,28 @@ jobs:
         with:
           fetch-depth: 0  # Full history for analysis
 
-      # Step 3: Download and Install SonarScanner CLI
+      # Step 3: Download and Setup SonarScanner CLI with Java Compatibility
       - name: Install SonarScanner CLI
         run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
-          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-          export PATH="$PWD/sonar-scanner/bin:$PATH"
-          sonar-scanner --version
+          # Download SonarScanner
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+          unzip sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+          
+          # Rename and set up path
+          mv sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux sonar-scanner
+          echo "$PWD/sonar-scanner/bin" >> $GITHUB_PATH
 
-      # Step 4: Run SonarScanner with Proper Config
+      # Step 4: Run SonarScanner with Enhanced Configuration
       - name: Run SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          sonar-scanner -X \
+          sonar-scanner \
           -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
           -Dsonar.organization=${{ env.SONAR_ORG }} \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.sources=. \
+          -Dsonar.tests=. \
+          -Dsonar.exclusions=**/*.java \
+          -X  # Enable debug logging
