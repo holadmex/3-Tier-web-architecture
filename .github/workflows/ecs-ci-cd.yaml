@@ -1,0 +1,39 @@
+name: ECS CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  SONAR_PROJECT_KEY: 3-Tier-web-architecture
+  SONAR_ORG: ecs-ci-cd
+  SONAR_SCANNER_PATH: /opt/sonar-scanner/bin
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Clone Repository
+        run: |
+          git clone https://github.com/holadmex/3-Tier-web-architecture.git
+
+      - name: SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+            -Dsonar.organization=${{ env.SONAR_ORG }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.sourceEncoding=UTF-8 \
+            -Dsonar.sources=frontend \
+            -Dsonar.exclusions=**/test/**,**/*.spec.js
+
+      
