@@ -62,7 +62,7 @@ jobs:
       - name: Install Trivy
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-          sudo mv trivy /usr/local/bin/
+          sudo mv ./bin/trivy /usr/local/bin/
   
       - name: Run Trivy Scan
         run: |
@@ -80,7 +80,7 @@ jobs:
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
           docker login --username AWS --password-stdin ${{ secrets.ECR_REPO }}
-          
+
       - name: Push Docker Image to ECR
         run: |
           docker tag ${{ env.FRONTEND_IMAGE }} ${{ env.ECR_REPO }}:${{ github.run_number }}
