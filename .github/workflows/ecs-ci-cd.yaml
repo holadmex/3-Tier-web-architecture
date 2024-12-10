@@ -1,3 +1,4 @@
+#CI-CD BACKUP
 name: ECS CI/CD
 
 on:
@@ -14,59 +15,48 @@ env:
   ECS_TASK_DEFINITION: task-web-app
   ECS_CLUSTER: Full-stack-web-app
   ECS_SERVICE: web-app-service
-  FRONTEND_IMAGE_NAME: your-frontend-image
 
 jobs:
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Clone Repository
         run: |
           git clone https://github.com/holadmex/3-Tier-web-architecture.git
 
-  sonarcloud:
-    name: Code Analysis with SonarCloud
+  #sonarcloud:
+    #name: Code Analysis with SonarCloud
+    #runs-on: ubuntu-latest
+    #needs: build-and-deploy # Run only after build-and-deploy completes
+    #steps:
+      #- name: Checkout code
+        #uses: actions/checkout@v4
+        #with:
+          #fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
+#
+      #- name: SonarCloud Scan
+        #uses: SonarSource/sonarcloud-github-action@master
+        #env:
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          #SONAR_HOST_URL: https://sonarcloud.io
+
+  docker-build:
+    name: Build Frontend Docker Image
     runs-on: ubuntu-latest
-    needs: build-and-deploy
+    #needs: sonarcloud
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-
-  docker-build-and-deploy:
-    name: Build, Scan, and Deploy Frontend
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: actions/checkout@v3
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ env.FRONTEND_IMAGE_NAME }}:${GITHUB_SHA::7} -f frontend/Dockerfile frontend/
+          docker build -t your-frontend-image:${GITHUB_SHA::3} -f frontend/Dockerfile frontend/
 
       - name: Install Trivy
         run: |
@@ -75,15 +65,20 @@ jobs:
   
       - name: Run Trivy Scan
         run: |
-          trivy image --severity HIGH,CRITICAL ${{ env.FRONTEND_IMAGE_NAME }}:${GITHUB_SHA::7} || true
-
-      - name: Tag and Push Docker Image to ECR
+          trivy image --severity HIGH,CRITICAL your-frontend-image:${GITHUB_SHA::3} || exit 1
+          
+      - name: Push Image to ECR
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          IMAGE_TAG=${GITHUB_SHA::7}
-          docker tag ${{ env.FRONTEND_IMAGE_NAME }}:$IMAGE_TAG ${{ secrets.ECR_REPO }}:$IMAGE_TAG
-          docker push ${{ secrets.ECR_REPO }}:$IMAGE_TAG
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+          docker login --username AWS --password-stdin ${{ secrets.ECR_REPO }}
+
+      - name: Push Docker Image to ECR
+        run: |
+          docker tag your-frontend-image:${GITHUB_SHA::3} ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
+          docker push ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
 
       - name: Update ECS Task Definition
         run: |
@@ -92,36 +87,29 @@ jobs:
             --task-definition ${{ env.ECS_TASK_DEFINITION }} \
             > task-definition.json
 
-          # Prepare updated task definition
-          jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_SHA::7}" \
-            '.taskDefinition.containerDefinitions[].image = $IMAGE | 
-             del(.taskDefinition.taskDefinitionArn, 
-                 .taskDefinition.revision, 
-                 .taskDefinition.status, 
-                 .taskDefinition.requiresAttributes, 
-                 .taskDefinition.compatibilities)' \
-            task-definition.json > updated-task-definition.json
+          # Extract and prepare container definitions
+          CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
 
-          # Register the updated task definition
-          newTaskDefinition=$(aws ecs register-task-definition \
+          # Update image in container definitions
+          UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
+            jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_SHA::7}" \
+            'map(if .name == "frontend" then .image = $IMAGE else . end)')
+
+          # Register new task definition
+          NEW_TASK_DEF=$(aws ecs register-task-definition \
             --family ${{ env.ECS_TASK_DEFINITION }} \
-            --container-definitions "$(cat updated-task-definition.json)" \
+            --container-definitions "$UPDATED_CONTAINER_DEFINITIONS" \
             --requires-compatibilities FARGATE \
             --network-mode awsvpc \
             --cpu 1024 \
             --memory 3072 \
             --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
 
-          # Extract revision
-          newTaskRevision=$(echo $newTaskDefinition | jq -r '.taskDefinition.revision')
+          # Extract the new revision
+          NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
 
           # Update ECS service
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$newTaskRevision
-
-      - name: Send Notification on Failure
-        if: failure()
-        run: |
-          echo "Deployment failed. Please check the workflow logs."
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
