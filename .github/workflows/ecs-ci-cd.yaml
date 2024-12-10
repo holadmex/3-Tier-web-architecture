@@ -10,6 +10,8 @@ on:
 env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
+  JAVA_HOME: /usr/lib/jvm/java-17-temurin
+  PATH: $JAVA_HOME/bin:$PATH
 
 jobs:
   build-and-deploy:
@@ -19,31 +21,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Clone Repository
+      - name: Debug Installed Java Versions
         run: |
-          git clone https://github.com/holadmex/3-Tier-web-architecture.git
+          update-alternatives --list java
+          java -version
+          echo "JAVA_HOME=$JAVA_HOME"
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'temurin'
-
-      - name: Verify Java Version
-        run: java -version
-
-      - name: Install Sonar Scanner
+      - name: Force Java 17 as Default
         run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-          unzip sonar-scanner-cli-4.8.0.2856-linux.zip
-          sudo mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner
+          sudo update-alternatives --set java /usr/lib/jvm/java-17-temurin/bin/java
+          java -version
+
+      - name: Install Latest Sonar Scanner
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+          sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
           echo "SONAR_SCANNER_HOME=/opt/sonar-scanner" >> $GITHUB_ENV
           echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
 
       - name: SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          JAVA_HOME: /usr/lib/jvm/java-17-temurin
         run: |
           sonar-scanner -X \
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
@@ -51,5 +50,5 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sourceEncoding=UTF-8 \
-            -Dsonar.sources="*" \
+            -Dsonar.sources=frontend \
             -Dsonar.exclusions=**/test/**,**/*.spec.js
