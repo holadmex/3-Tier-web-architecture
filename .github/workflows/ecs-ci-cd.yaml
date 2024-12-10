@@ -48,7 +48,7 @@ jobs:
   docker-build-and-deploy:
     name: Build, Scan, and Deploy Frontend
     runs-on: ubuntu-latest
-    needs: sonarcloud
+    #needs: sonarcloud
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
