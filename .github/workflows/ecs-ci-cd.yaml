@@ -52,7 +52,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t your-frontend-image:${{ github.sha }} -f frontend/Dockerfile frontend/
+          SHORT_SHA=${{ github.sha:0:3 }} 
+          docker build -t your-frontend-image:${SHORT_SHA} -f frontend/Dockerfile frontend/
 
       - name: Install Trivy
         run: |
@@ -61,7 +62,7 @@ jobs:
   
       - name: Run Trivy Scan
         run: |
-          trivy image --severity HIGH,CRITICAL your-frontend-image:${{ github.sha }} || exit 1
+          trivy image --severity HIGH,CRITICAL your-frontend-image:${SHORT_SHA} || exit 1
           
       - name: Push Image to ECR
         env:
@@ -73,5 +74,5 @@ jobs:
 
       - name: Push Docker Image to ECR
         run: |
-          docker tag your-frontend-image:${{ github.sha }} ${{ secrets.ECR_REPO }}:${{ github.sha }}
-          docker push ${{ secrets.ECR_REPO }}:${{ github.sha }}
+          docker tag your-frontend-image:${SHORT_SHA} ${{ secrets.ECR_REPO }}:${SHORT_SHA}
+          docker push ${{ secrets.ECR_REPO }}:${SHORT_SHA}
