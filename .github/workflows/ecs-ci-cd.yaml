@@ -29,6 +29,9 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Verify Java Version
+        run: java -version
+
       - name: Install Sonar Scanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
@@ -40,6 +43,7 @@ jobs:
       - name: SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          JAVA_HOME: /usr/lib/jvm/java-17-temurin
         run: |
           sonar-scanner -X \
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
@@ -47,5 +51,5 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.sourceEncoding=UTF-8 \
-            -Dsonar.sources=frontend \
+            -Dsonar.sources="*" \
             -Dsonar.exclusions=**/test/**,**/*.spec.js
