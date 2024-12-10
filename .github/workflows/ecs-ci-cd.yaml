@@ -8,6 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
+  FRONTEND_IMAGE: your-frontend-image:latest
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
 
