@@ -27,7 +27,6 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
-        run: java -version
       
       - name: Install Sonar Scanner
         run: |
