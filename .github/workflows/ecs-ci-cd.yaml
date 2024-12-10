@@ -10,7 +10,6 @@ on:
 env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
-  SONAR_SCANNER_PATH: /opt/sonar-scanner/bin
 
 jobs:
   build-and-deploy:
