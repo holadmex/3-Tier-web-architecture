@@ -24,8 +24,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'  # Optional: caches Maven dependencies
-
+          # Remove Maven cache since no pom.xml is found
+          
       - name: Verify Java Version
         run: java -version
 
@@ -35,18 +35,21 @@ jobs:
         with:
           fetch-depth: 0  # Full history for analysis
 
-      # Step 3: Download and Setup SonarScanner CLI with Java Compatibility
+      # Step 3: Verify Repository Contents
+      - name: List Repository Contents
+        run: |
+          pwd
+          ls -R
+
+      # Step 4: Download and Setup SonarScanner CLI
       - name: Install SonarScanner CLI
         run: |
-          # Download SonarScanner
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
           unzip sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
-          
-          # Rename and set up path
           mv sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux sonar-scanner
           echo "$PWD/sonar-scanner/bin" >> $GITHUB_PATH
 
-      # Step 4: Run SonarScanner with Enhanced Configuration
+      # Step 5: Run SonarScanner with Flexible Configuration
       - name: Run SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -57,6 +60,5 @@ jobs:
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
           -Dsonar.sources=. \
-          -Dsonar.tests=. \
           -Dsonar.exclusions=**/*.java \
           -X  # Enable debug logging
