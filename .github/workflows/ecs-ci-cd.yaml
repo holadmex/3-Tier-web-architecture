@@ -94,27 +94,18 @@ jobs:
 
           # Prepare updated task definition
           jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_SHA::7}" \
-            '.taskDefinition.containerDefinitions[].image = $IMAGE | 
-             del(.taskDefinition.taskDefinitionArn, 
-                 .taskDefinition.revision, 
-                 .taskDefinition.status, 
-                 .taskDefinition.requiresAttributes, 
-                 .taskDefinition.compatibilities)' \
+            '.containerDefinitions[0].image = $IMAGE | 
+             del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities)' \
             task-definition.json > updated-task-definition.json
 
           # Register new task definition
           NEW_TASK_DEF=$(aws ecs register-task-definition \
-            --cli-input-json file://updated-task-definition.json \
-            --requires-compatibilities FARGATE \
-            --network-mode awsvpc \
-            --cpu 1024 \
-            --memory 3072 \
-            --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
+            --cli-input-json file://updated-task-definition.json)
 
           # Extract the new revision
           NEW_REVISION=$(echo $NEW_TASK_DEF | jq -r '.taskDefinition.revision')
 
-          # Update ECS service
+          # Update ECS service with the new task definition
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
