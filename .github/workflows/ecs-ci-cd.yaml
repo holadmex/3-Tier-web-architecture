@@ -26,7 +26,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          sonar-scanner \
+          SonarCloud \
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
             -Dsonar.organization=${{ env.SONAR_ORG }} \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
