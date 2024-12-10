@@ -30,16 +30,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/holadmex/3-Tier-web-architecture.git'
             }
         }
-
-        stage('Build Frontend Docker Image') {
-            steps {
-                script {
-                    sh """
-                    docker build -t $FRONTEND_IMAGE -f frontend/Dockerfile frontend/
-                    """
-                }
-            }
-        }
         stage('SonarCloud Analysis') {
             steps {
                 withSonarQubeEnv('SonarCloud') {
@@ -63,6 +53,15 @@ pipeline {
                     if (qualityGate.status != 'OK') {
                         error "Quality gate failed: ${qualityGate.status}"
                     }
+                }
+            }
+        }
+        stage('Build Frontend Docker Image') {
+            steps {
+                script {
+                    sh """
+                    docker build -t $FRONTEND_IMAGE -f frontend/Dockerfile frontend/
+                    """
                 }
             }
         }
@@ -130,8 +129,6 @@ pipeline {
         }
     }
 }
-
-
   }
     post {
         always {
