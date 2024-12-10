@@ -72,7 +72,7 @@ jobs:
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
           sudo mv ./bin/trivy /usr/local/bin/
-  
+
       - name: Run Trivy Scan
         run: |
           trivy image --severity HIGH,CRITICAL ${{ env.FRONTEND_IMAGE_NAME }}:${GITHUB_SHA::7} || true
@@ -98,6 +98,9 @@ jobs:
              del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities)' \
             task-definition.json > updated-task-definition.json
 
+          # Extract the family field from the current task definition
+          FAMILY=$(jq -r '.family' task-definition.json)
+
           # Register new task definition
           NEW_TASK_DEF=$(aws ecs register-task-definition \
             --cli-input-json file://updated-task-definition.json)
@@ -109,7 +112,7 @@ jobs:
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+            --task-definition $FAMILY:$NEW_REVISION
 
       - name: Send Notification on Failure
         if: failure()
