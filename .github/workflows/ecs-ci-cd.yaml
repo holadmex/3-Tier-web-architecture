@@ -141,14 +141,14 @@ jobs:
   
       - name: Build Docker Image for Production
         run: |
-          docker build -t prod-frontend:${GITHUB_REF_NAME} -f frontend/Dockerfile frontend/
+          docker build -t prod-frontend:${{ github.ref_name }} -f frontend/Dockerfile frontend/
   
       - name: Push Docker Image to ECR for Prod
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${GITHUB_REF_NAME}
+          IMAGE_TAG: ${{ github.ref_name }}
         run: |
-          docker tag prod-frontend:${GITHUB_REF_NAME} $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
+          docker tag prod-frontend:$IMAGE_TAG $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
           docker push $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
   
       - name: Update ECS Task Definition for Prod
