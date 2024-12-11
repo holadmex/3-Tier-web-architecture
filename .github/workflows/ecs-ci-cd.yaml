@@ -128,35 +128,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
   
-      - name: Build Docker Image for Production
-        run: |
-          docker build -t prod-frontend:${GITHUB_REF_NAME} -f frontend/Dockerfile frontend/
-
-      - name: Log in to Amazon ECR
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
-          docker login --username AWS --password-stdin ${{ secrets.ECR_REPO }}
-  
-      - name: Push Image to ECR 
-        uses: aws-actions/amazon-ecr-login@v2
-  
-      - name: Push Docker Image to ECR for Prod
-        env:
-          IMAGE_TAG: ${{ secrets.ECR_REPO }}:${GITHUB_REF_NAME}
-        run: |
-          docker tag prod-frontend:${GITHUB_REF_NAME} $IMAGE_TAG
-          docker push $IMAGE_TAG
-  
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-1
+  
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+  
+      - name: Build Docker Image for Production
+        run: |
+          docker build -t prod-frontend:${GITHUB_REF_NAME} -f frontend/Dockerfile frontend/
+  
+      - name: Push Docker Image to ECR for Prod
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${GITHUB_REF_NAME}
+        run: |
+          docker tag prod-frontend:${GITHUB_REF_NAME} $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
   
       - name: Update ECS Task Definition for Prod
         run: |
@@ -167,7 +160,7 @@ jobs:
           CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
   
           UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
-            jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_REF_NAME}" \
+            jq --arg IMAGE "$ECR_REGISTRY/prod-frontend:$IMAGE_TAG" \
             'map(if .name == "frontend" then .image = $IMAGE else . end)')
   
           NEW_TASK_DEF=$(aws ecs register-task-definition \
@@ -185,4 +178,3 @@ jobs:
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
-
