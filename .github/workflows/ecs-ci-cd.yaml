@@ -9,6 +9,11 @@ on:
       - stage
     tags: # Triggers deployment to production on tags
       - 'v*'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - dev
+      - stage
 
 env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
