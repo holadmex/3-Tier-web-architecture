@@ -3,9 +3,10 @@ name: ECS CI/CD
 on:
   push:
     branches:
-      - main
       - dev
       - stage
+    tags: # Triggers deployment to production on tags
+      - 'v*'
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -72,11 +73,11 @@ jobs:
           docker tag frontend:${GITHUB_SHA::3} ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
           docker push ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
 
-  deploy:
-    name: Deploy to ECS
+  deploy-dev-stage:
+    name: Deploy to Dev/Stage
     runs-on: ubuntu-latest
     needs: [sonarcloud, docker-build]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
+    if: startsWith(github.event.ref, 'refs/heads/dev') || startsWith(github.event.ref, 'refs/heads/stage')
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -115,3 +116,61 @@ jobs:
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+
+  deploy-prod:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') # Only runs for tags
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: Build Docker Image for Production
+        run: |
+          docker build -t prod-frontend:${GITHUB_REF_NAME} -f frontend/Dockerfile frontend/
+  
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+  
+      - name: Push Docker Image to ECR for Prod
+        env:
+          IMAGE_TAG: ${{ secrets.ECR_REPO }}:${GITHUB_REF_NAME}
+        run: |
+          docker tag prod-frontend:${GITHUB_REF_NAME} $IMAGE_TAG
+          docker push $IMAGE_TAG
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+  
+      - name: Update ECS Task Definition for Prod
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            > task-definition.json
+  
+          CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
+  
+          UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
+            jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_REF_NAME}" \
+            'map(if .name == "frontend" then .image = $IMAGE else . end)')
+  
+          NEW_TASK_DEF=$(aws ecs register-task-definition \
+            --family ${{ env.ECS_TASK_DEFINITION }} \
+            --container-definitions "$UPDATED_CONTAINER_DEFINITIONS" \
+            --requires-compatibilities FARGATE \
+            --network-mode awsvpc \
+            --cpu 1024 \
+            --memory 3072 \
+            --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
+  
+          NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
+  
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+
