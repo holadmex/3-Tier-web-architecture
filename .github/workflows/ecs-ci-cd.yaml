@@ -161,7 +161,7 @@ jobs:
           CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
   
           UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
-            jq --arg IMAGE "$ECR_REGISTRY/frontend:$IMAGE_TAG" \
+            jq --arg IMAGE "${{ secrets.ECR_REPO }}:${{ github.ref_name }}" \
             'map(if .name == "frontend" then .image = $IMAGE else . end)')
   
           NEW_TASK_DEF=$(aws ecs register-task-definition \
