@@ -44,7 +44,7 @@ jobs:
     name: Build Frontend Docker Image
     runs-on: ubuntu-latest
     needs: sonarcloud
-    if: github.event_name == 'push'
+    if: startsWith(github.event.ref, 'refs/heads/dev') || startsWith(github.event.ref, 'refs/heads/stage')
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
