@@ -146,10 +146,11 @@ jobs:
       - name: Push Docker Image to ECR for Prod
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: ${{ secrets.ECR_REPO }}:${{ github.ref_name }}
           IMAGE_TAG: ${{ github.ref_name }}
         run: |
-          docker tag frontend:$IMAGE_TAG $ECR_REGISTRY/frontend:$IMAGE_TAG
-          docker push $ECR_REGISTRY/frontend:$IMAGE_TAG
+          docker tag frontend:$IMAGE_TAG ${{ secrets.ECR_REPO }}:${{ github.ref_name }}
+          docker push ${{ secrets.ECR_REPO }}:${{ github.ref_name }}
   
       - name: Update ECS Task Definition for Prod
         run: |
