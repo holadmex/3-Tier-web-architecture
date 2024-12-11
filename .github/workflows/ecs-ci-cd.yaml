@@ -141,15 +141,15 @@ jobs:
   
       - name: Build Docker Image for Production
         run: |
-          docker build -t prod-frontend:${{ github.ref_name }} -f frontend/Dockerfile frontend/
+          docker build -t frontend:${{ github.ref_name }} -f frontend/Dockerfile frontend/
   
       - name: Push Docker Image to ECR for Prod
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.ref_name }}
         run: |
-          docker tag prod-frontend:$IMAGE_TAG $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
-          docker push $ECR_REGISTRY/prod-frontend:$IMAGE_TAG
+          docker tag frontend:$IMAGE_TAG $ECR_REGISTRY/frontend:$IMAGE_TAG
+          docker push $ECR_REGISTRY/frontend:$IMAGE_TAG
   
       - name: Update ECS Task Definition for Prod
         run: |
@@ -160,7 +160,7 @@ jobs:
           CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
   
           UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
-            jq --arg IMAGE "$ECR_REGISTRY/prod-frontend:$IMAGE_TAG" \
+            jq --arg IMAGE "$ECR_REGISTRY/frontend:$IMAGE_TAG" \
             'map(if .name == "frontend" then .image = $IMAGE else . end)')
   
           NEW_TASK_DEF=$(aws ecs register-task-definition \
