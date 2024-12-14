@@ -179,3 +179,4 @@ jobs:
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+
