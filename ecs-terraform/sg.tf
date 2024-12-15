@@ -5,10 +5,11 @@ resource "aws_security_group" "ecs_service_sg" {
   vpc_id      = "vpc-29f0c052" # Replace with your VPC ID
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+    cidr_blocks     = ["0.0.0.0/0"]
   }
 
   egress {
