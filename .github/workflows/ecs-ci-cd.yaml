@@ -178,5 +178,6 @@ jobs:
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION \
+            -- desired_count = 1
 
