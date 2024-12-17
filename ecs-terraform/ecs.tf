@@ -5,13 +5,13 @@ resource "aws_ecs_cluster" "cluster" {
 
 # Create CloudWatch Log Group for ECS
 resource "aws_cloudwatch_log_group" "ecs_log_group" {
-  name              = "/ecs/example-task"
+  name              = "/ecs/frontend/"
   retention_in_days = 7
 }
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "task" {
-  family = "web-task"
+  family = "webapp-task"
   container_definitions = jsonencode([
     {
       name      = "frontend"

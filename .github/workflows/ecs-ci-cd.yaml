@@ -31,7 +31,7 @@ jobs:
   sonarcloud:
     name: Code Analysis with SonarCloud
     runs-on: ubuntu-latest
-    needs: build-and-deploy ## Run only after build-and-deploy completes
+    needs: build-and-deploy # Run only after build-and-deploy completes
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
