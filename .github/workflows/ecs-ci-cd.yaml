@@ -1,42 +1,47 @@
-#V TAG
-
 name: ECS CI/CD
 
 on:
   push:
     branches:
-      - dev
-      - stage
-    tags: # Triggers deployment to production on tags
-      - 'v*'
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - dev
-      - stage
 
 env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
   AWS_REGION: us-east-1
-  ECS_TASK_DEFINITION: task-web-app
-  ECS_CLUSTER: Full-stack-web-app
-  ECS_SERVICE: web-app-service
+  ECS_TASK_DEFINITION: web-task
+  ECS_CLUSTER: web-app
+  ECS_SERVICE: web-service
 
 jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Clone Repository
+        run: |
+          git clone https://github.com/holadmex/3-Tier-web-architecture.git
+
   sonarcloud:
     name: Code Analysis with SonarCloud
     runs-on: ubuntu-latest
+    needs: build-and-deploy # Run only after build-and-deploy completes
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Shallow clones should be disabled for better relevancy of analysis
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
 
@@ -44,7 +49,6 @@ jobs:
     name: Build Frontend Docker Image
     runs-on: ubuntu-latest
     needs: sonarcloud
-    if: startsWith(github.event.ref, 'refs/heads/dev') || startsWith(github.event.ref, 'refs/heads/stage')
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -75,15 +79,6 @@ jobs:
           docker tag frontend:${GITHUB_SHA::3} ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
           docker push ${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}
 
-  deploy-dev-stage:
-    name: Deploy to Dev/Stage
-    runs-on: ubuntu-latest
-    needs: [sonarcloud, docker-build]
-    if: startsWith(github.event.ref, 'refs/heads/dev') || startsWith(github.event.ref, 'refs/heads/stage')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -93,16 +88,20 @@ jobs:
 
       - name: Update ECS Task Definition
         run: |
+          # Fetch the current task definition
           aws ecs describe-task-definition \
             --task-definition ${{ env.ECS_TASK_DEFINITION }} \
             > task-definition.json
 
+          # Extract and prepare container definitions
           CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
 
+          # Update image in container definitions
           UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
             jq --arg IMAGE "${{ secrets.ECR_REPO }}:${GITHUB_SHA::3}" \
             'map(if .name == "frontend" then .image = $IMAGE else . end)')
 
+          # Register new task definition
           NEW_TASK_DEF=$(aws ecs register-task-definition \
             --family ${{ env.ECS_TASK_DEFINITION }} \
             --container-definitions "$UPDATED_CONTAINER_DEFINITIONS" \
@@ -112,72 +111,13 @@ jobs:
             --memory 3072 \
             --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
 
+          # Extract the new revision
           NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
 
+          # Update ECS service
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
             --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
-
-  deploy-prod:
-    name: Deploy to Prod
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-    if: startsWith(github.ref, 'refs/tags/v') # Only runs for tags
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-  
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-  
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-  
-      - name: Build Docker Image for Production
-        run: |
-          docker build -t frontend:${{ github.ref_name }} -f frontend/Dockerfile frontend/
-  
-      - name: Push Docker Image to ECR for Prod
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPO: ${{ secrets.ECR_REPO }}:${{ github.ref_name }}
-          IMAGE_TAG: ${{ github.ref_name }}
-        run: |
-          docker tag frontend:$IMAGE_TAG ${{ secrets.ECR_REPO }}:${{ github.ref_name }}
-          docker push ${{ secrets.ECR_REPO }}:${{ github.ref_name }}
-  
-      - name: Update ECS Task Definition for Prod
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-            > task-definition.json
-  
-          CONTAINER_DEFINITIONS=$(jq '.taskDefinition.containerDefinitions' task-definition.json)
-  
-          UPDATED_CONTAINER_DEFINITIONS=$(echo "$CONTAINER_DEFINITIONS" | \
-            jq --arg IMAGE "${{ secrets.ECR_REPO }}:${{ github.ref_name }}" \
-            'map(if .name == "frontend" then .image = $IMAGE else . end)')
-  
-          NEW_TASK_DEF=$(aws ecs register-task-definition \
-            --family ${{ env.ECS_TASK_DEFINITION }} \
-            --container-definitions "$UPDATED_CONTAINER_DEFINITIONS" \
-            --requires-compatibilities FARGATE \
-            --network-mode awsvpc \
-            --cpu 1024 \
-            --memory 3072 \
-            --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
-  
-          NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
-  
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION \
             -- desired_count = 1
 
