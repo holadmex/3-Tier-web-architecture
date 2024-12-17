@@ -11,7 +11,7 @@ env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
   AWS_REGION: us-east-1
-  ECS_TASK_DEFINITION: web-task
+  ECS_TASK_DEFINITION: webapp-task
   ECS_CLUSTER: web-app
   ECS_SERVICE: web-service
 
