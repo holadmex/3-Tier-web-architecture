@@ -109,7 +109,7 @@ jobs:
             --network-mode awsvpc \
             --cpu 1024 \
             --memory 3072 \
-            --execution-role-arn "$ECS_EXECUTION_ROLE_ARN")
+            --execution-role-arn arn:aws:iam::429841094792:role/ecsTaskExecutionRole)
 
           # Extract the new revision
           NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
