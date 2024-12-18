@@ -17,9 +17,9 @@ env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
   AWS_REGION: us-east-1
-  ECS_TASK_DEFINITION: task-web-app
-  ECS_CLUSTER: Full-stack-web-app
-  ECS_SERVICE: web-app-service
+  ECS_TASK_DEFINITION: webapp-task
+  ECS_CLUSTER: web-app
+  ECS_SERVICE: web-service
 
 jobs:
   sonarcloud:
@@ -108,14 +108,15 @@ jobs:
             --network-mode awsvpc \
             --cpu 1024 \
             --memory 3072 \
-            --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
+            --execution-role-arn arn:aws:iam::429841094792:role/ecsTaskExecutionRole)
 
           NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
 
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION \
+            --desired-count 1
 
   deploy-prod:
     name: Deploy to Prod
@@ -169,11 +170,12 @@ jobs:
             --network-mode awsvpc \
             --cpu 1024 \
             --memory 3072 \
-            --execution-role-arn arn:aws:iam::429841094792:role/todo-app-role)
+            --execution-role-arn arn:aws:iam::429841094792:role/ecsTaskExecutionRole)
   
           NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
   
           aws ecs update-service \
             --cluster ${{ env.ECS_CLUSTER }} \
             --service ${{ env.ECS_SERVICE }} \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION
+            --task-definition ${{ env.ECS_TASK_DEFINITION }}:$NEW_REVISION \
+            --desired-count 1
