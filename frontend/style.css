@@ -1,46 +1,147 @@
+/* Global Styling */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
-  }
-  header {
-    background-color: #007bff;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .profile {
-    display: flex;
-    align-items: center;
-  }
-  .profile-icon {
-    width: 30px;
-    height: 30px;
-    margin-left: 10px;
-    border-radius: 50%;
-  }
-  .auth-links a {
-    color: white;
-    margin: 0 10px;
-    text-decoration: none;
-  }
-  .form-container {
-    width: 300px;
-    margin: 50px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  input, button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-  }
-  .products {
-    padding: 20px;
-  }
-  
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2C3E50; /* Navy Blue for primary text */
+  background-color: #F5F5DC; /* Light Beige background */
+  margin: 0;
+  padding: 0;
+}
+
+/* Header Styling */
+header {
+  background-color: #2C3E50; /* Navy Blue for header background */
+  color: #FFFFFF; /* White text */
+  padding: 20px;
+  text-align: center;
+  border-bottom: 3px solid #8E354A; /* Deep Burgundy accent */
+}
+
+/* Button Styling */
+button {
+  background-color: #D4AF37; /* Warm Gold */
+  color: #FFFFFF; /* White text */
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #E58E26; /* Muted Orange */
+}
+
+/* Links */
+a {
+  color: #355C47; /* Forest Green */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  color: #8E354A; /* Deep Burgundy */
+  text-decoration: underline;
+}
+
+/* Footer Styling */
+footer {
+  background-color: #355C47; /* Forest Green */
+  color: #FFFFFF; /* White text */
+  text-align: center;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+/* Card/Section Styling */
+.card {
+  background-color: #FFFFFF; /* White */
+  border: 1px solid #7F8C8D; /* Cool Gray border */
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card h2 {
+  color: #2C3E50; /* Navy Blue */
+}
+
+.card p {
+  color: #7F8C8D; /* Cool Gray text */
+}
+
+/* Styling for the Welcome section */
+#welcome {
+  background-color: #F8BBD0; /* Light Pink background */
+  color: #2C3E50; /* Navy Blue text */
+  padding: 20px;
+  display: none; /* Hidden by default */
+}
+
+#welcome .profile {
+  display: flex;
+  align-items: center;
+}
+
+#welcome .profile-icon {
+  width: 30px;
+  height: 30px;
+  margin-left: 10px;
+  border-radius: 50%;
+}
+
+/* Styling for login and signup forms */
+.form-container {
+  width: 300px;
+  margin: 50px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: none; /* Initially hide the form sections */
+  transition: all 0.3s ease-in-out; /* Smooth transition for visibility */
+}
+
+/* Show login and signup forms when they are toggled */
+#login.show, #signup.show {
+  display: block; /* Show when 'show' class is added */
+}
+
+/* Styling for form elements */
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+/* Styling for the main page (home section) */
+.products {
+  padding: 20px;
+}
+
+/* Styling for authentication links */
+.auth-links a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Hover effect for authentication links */
+.auth-links a:hover {
+  text-decoration: underline;
+  color: #D81B60; /* Change color on hover */
+}
+
+/* Hiding login and signup forms when they are not active */
+#login, #signup {
+  display: none;
+}
+
+/* Adding more specific styling for the home page and sections */
+#home {
+  padding: 20px;
+}
