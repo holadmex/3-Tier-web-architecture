@@ -15,16 +15,16 @@ spec:
     spec:
       containers:
       - name: database
-        image: postgres:15
+        image: holadmex/postgres:13
         ports:
         - containerPort: 5432
         env:
         - name: POSTGRES_USER
-          value: "user"
+          value: "ecommerce"
         - name: POSTGRES_PASSWORD
-          value: "password"
+          value: "testing123"
         - name: POSTGRES_DB
-          value: "mydatabase"
+          value: "ecommerce_db"
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: db-storage

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: your-backend-image:latest
+        image: holadmex/3-tier-web-architecture-backend:latest
         ports:
         - containerPort: 5000
         env:

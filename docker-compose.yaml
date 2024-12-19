@@ -6,8 +6,8 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URI= $DATABASE_URI  # Replace with your actual database URI
-      - SECRET_KEY= $SECRET_KEY
+      - DATABASE_URI=postgresql://ecommerce:testing123@127.0.0.1:5432/ecommerce_db  # Replace with your actual database URI
+      - SECRET_KEY=07de321968cb899fe9c2226205812524
     volumes:
       - ./backend:/app
     depends_on:

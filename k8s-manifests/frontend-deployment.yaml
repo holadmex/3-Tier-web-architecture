@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: your-frontend-image:latest
+        image: holadmex/3-tier-web-architecture-frontend:latest
         ports:
         - containerPort: 80
         env:
