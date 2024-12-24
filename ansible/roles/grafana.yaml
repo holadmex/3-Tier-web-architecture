@@ -1,0 +1,24 @@
+---
+- name: Install Grafana using Helm
+  command:
+    cmd: helm install grafana prometheus-community/grafana
+  become: true
+
+- name: Expose Grafana with NodePort
+  kubernetes_core.k8s:
+    name: grafana
+    namespace: monitoring
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: grafana
+        namespace: monitoring
+      spec:
+        type: NodePort
+        ports:
+          - port: 80
+            targetPort: 3000
+        selector:
+          app: grafana
+  become: true
