@@ -1,0 +1,24 @@
+---
+- name: Install Prometheus using Helm
+  command:
+    cmd: helm install prometheus prometheus-community/kube-prometheus-stack
+  become: true
+
+- name: Expose Prometheus with NodePort
+  kubernetes_core.k8s:
+    name: prometheus-server
+    namespace: monitoring
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: prometheus-server
+        namespace: monitoring
+      spec:
+        type: NodePort
+        ports:
+          - port: 80
+            targetPort: 9090
+        selector:
+          app: prometheus
+  become: true

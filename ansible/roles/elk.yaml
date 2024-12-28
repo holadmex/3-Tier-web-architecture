@@ -1,0 +1,72 @@
+---
+- name: Install Elasticsearch using Helm
+  command:
+    cmd: helm install elasticsearch elastic/elasticsearch
+  become: true
+
+- name: Install Logstash using Helm
+  command:
+    cmd: helm install logstash elastic/logstash
+  become: true
+
+- name: Install Kibana using Helm
+  command:
+    cmd: helm install kibana elastic/kibana
+  become: true
+
+- name: Expose Elasticsearch with NodePort
+  kubernetes_core.k8s:
+    name: elasticsearch
+    namespace: logging
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: elasticsearch
+        namespace: logging
+      spec:
+        type: NodePort
+        ports:
+          - port: 9200
+            targetPort: 9200
+        selector:
+          app: elasticsearch
+  become: true
+
+- name: Expose Logstash with NodePort
+  kubernetes_core.k8s:
+    name: logstash
+    namespace: logging
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: logstash
+        namespace: logging
+      spec:
+        type: NodePort
+        ports:
+          - port: 5044
+            targetPort: 5044
+        selector:
+          app: logstash
+  become: true
+
+- name: Expose Kibana with NodePort
+  kubernetes_core.k8s:
+    name: kibana
+    namespace: logging
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: kibana
+        namespace: logging
+      spec:
+        type: NodePort
+        ports:
+          - port: 5601
+            targetPort: 5601
+        selector:
+          app: kibana
+  become: true

@@ -1,0 +1,8 @@
+---
+- name: Install Prometheus, Grafana, and ELK Stack
+  hosts: k8s-master
+  become: true
+  tasks:
+    - import_tasks: ../roles/prometheus.yaml
+    - import_tasks: ../roles/grafana.yaml
+    - import_tasks: ../roles/elk.yaml
