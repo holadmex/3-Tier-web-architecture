@@ -2,7 +2,7 @@
 resource "aws_security_group" "ecs_service_sg" {
   name_prefix = "ecs-service-sg"
   description = "Security group for ECS service"
-  vpc_id      = "vpc-29f0c052" # Replace with your VPC ID
+  vpc_id      = "vpc-0b9f2dfca52d59399" # Replace with your VPC ID
 
   ingress {
     from_port       = 80

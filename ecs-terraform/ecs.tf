@@ -1,6 +1,6 @@
 # Create ECS Cluster
 resource "aws_ecs_cluster" "cluster" {
-  name = "web-app"
+  name = "3tier-web-app"
 }
 
 # Create CloudWatch Log Group for ECS
@@ -11,7 +11,7 @@ resource "aws_cloudwatch_log_group" "ecs_log_group" {
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "task" {
-  family = "webapp-task"
+  family = "3-tier-webapp-task"
   container_definitions = jsonencode([
     {
       name      = "frontend"
@@ -36,7 +36,7 @@ resource "aws_ecs_task_definition" "task" {
         logDriver = "awslogs"
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_log_group.name
-          "awslogs-region"        = "us-east-1"
+          "awslogs-region"        = "eu-west-1"
           "awslogs-stream-prefix" = "ecs"
         }
       }
@@ -54,7 +54,7 @@ resource "aws_ecs_task_definition" "task" {
 resource "aws_security_group" "alb_sg" {
   name        = "alb-sg"
   description = "Allow HTTP/HTTPS traffic for the ALB"
-  vpc_id      = "vpc-29f0c052" # Replace with your VPC ID
+  vpc_id      = "vpc-0b9f2dfca52d59399" # Replace with your VPC ID
 
   ingress {
     from_port   = 80
@@ -88,7 +88,7 @@ resource "aws_lb" "alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = ["subnet-3a4cc635", "subnet-ba203d85"] # Replace with your Subnet IDs
+  subnets            = ["subnet-08b69cd6674e36970", "subnet-04c03e35ea4762d3d"] # Replace with your Subnet IDs
 
   enable_deletion_protection = false
 
@@ -102,7 +102,7 @@ resource "aws_lb_target_group" "tg" {
   name        = "web-app-tg"
   port        = 80
   protocol    = "HTTP"
-  vpc_id      = "vpc-29f0c052" # Replace with your VPC ID
+  vpc_id      = "vpc-0b9f2dfca52d59399" # Replace with your VPC ID
   target_type = "ip"
 
   health_check {
@@ -140,7 +140,7 @@ resource "aws_ecs_service" "service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = ["subnet-3a4cc635", "subnet-ba203d85"] # Replace with your Subnet IDs
+    subnets          = ["subnet-04c03e35ea4762d3d", "subnet-08b69cd6674e36970"] # Replace with your Subnet IDs
     security_groups  = [aws_security_group.ecs_service_sg.id]
     assign_public_ip = true
   }
@@ -156,4 +156,3 @@ resource "aws_ecs_service" "service" {
     aws_lb_listener.http_listener
   ]
 }
-

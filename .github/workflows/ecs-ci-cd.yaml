@@ -14,9 +14,9 @@ on:
 env:
   SONAR_PROJECT_KEY: 3-Tier-web-architecture
   SONAR_ORG: ecs-ci-cd
-  AWS_REGION: us-east-1
-  ECS_TASK_DEFINITION: webapp-task
-  ECS_CLUSTER: web-app
+  AWS_REGION: eu-west-1
+  ECS_TASK_DEFINITION: 3-tier-webapp-task
+  ECS_CLUSTER: 3tier-web-app
   ECS_SERVICE: web-service
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
 
       - name: Clone Repository
         run: |
-          git clone https://github.com/holadmex/3-Tier-web-architecture.git
+          git clone https://github.com/Kehindeomotayo/3-Tier-web-architecture.git 
 
   sonarcloud:
     name: Code Analysis with SonarCloud
@@ -119,7 +119,7 @@ jobs:
             --network-mode awsvpc \
             --cpu 1024 \
             --memory 3072 \
-            --execution-role-arn arn:aws:iam::429841094792:role/ecsTaskExecutionRole)
+            --execution-role-arn arn:aws:iam::971422716815:role/ecsTaskExecutionRole)
 
           NEW_REVISION=$(echo "$NEW_TASK_DEF" | jq -r '.taskDefinition.revision')
 
