@@ -1,5 +1,6 @@
 - name: Create logging namespace
   kubernetes.core.k8s:
+    kubeconfig: "/home/ubuntu/.kube/config"
     name: logging
     api_version: v1
     kind: Namespace
@@ -10,6 +11,8 @@
     name: elastic
     repo_url: https://helm.elastic.co
     state: present
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"
 
 - name: Deploy Elasticsearch
   kubernetes.core.helm:
@@ -22,6 +25,9 @@
         requests:
           memory: "1Gi"
     wait: yes
+    timeout: 300
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"
 
 - name: Deploy Logstash
   kubernetes.core.helm:
@@ -33,6 +39,9 @@
         requests:
           memory: "512Mi"
     wait: yes
+    timeout: 300
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"
 
 - name: Deploy Kibana
   kubernetes.core.helm:
@@ -46,3 +55,6 @@
       service:
         type: NodePort
     wait: yes
+    timeout: 300
+  environment:
+    KUBECONFIG: "/home/ubuntu/.kube/config"

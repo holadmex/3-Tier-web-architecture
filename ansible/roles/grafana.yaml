@@ -1,6 +1,7 @@
 ---
 - name: Add Grafana repository
   kubernetes.core.helm_repository:
+    kubeconfig: "/home/ubuntu/.kube/config"
     name: grafana
     repo_url: https://grafana.github.io/helm-charts
     state: present
@@ -36,16 +37,16 @@
     values_files:
       - /tmp/grafana-values.yaml
     wait: yes
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
 
 - name: Get Grafana admin password
-  kubernetes.core.k8s_info:
-    kind: Secret
-    name: grafana
-    namespace: monitoring
-  register: grafana_secret
+  command: kubectl --kubeconfig /home/ubuntu/.kube/config get secret grafana -n monitoring -o yaml
+  register: grafana_secret_output
 
 - name: Display Grafana login credentials
   debug:
-    msg: 
+    msg:
       - "Username: admin"
-      - "Password: {{ grafana_secret.resources[0].data.admin_password | b64decode }}"
+      - "Password: {{ grafana_secret_output.stdout | from_yaml | json_query('items[0].data.admin_password') | b64decode }}"
+
