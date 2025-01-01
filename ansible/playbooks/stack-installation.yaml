@@ -2,7 +2,16 @@
 - name: Install Prometheus, Grafana, and ELK Stack
   hosts: k8s-master
   become: true
+  environment:
+    KUBECONFIG: ~/.kube/config
   tasks:
+    - name: Install Python requirements
+      pip:
+        name: 
+          - kubernetes
+          - openshift
+        state: present
+
     - import_tasks: ../roles/prometheus.yaml
     - import_tasks: ../roles/grafana.yaml
     - import_tasks: ../roles/elk.yaml

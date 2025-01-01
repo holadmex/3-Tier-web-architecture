@@ -1,24 +1,51 @@
 ---
-- name: Install Grafana using Helm
-  command:
-    cmd: helm install grafana prometheus-community/grafana
-  become: true
+- name: Add Grafana repository
+  kubernetes.core.helm_repository:
+    name: grafana
+    repo_url: https://grafana.github.io/helm-charts
+    state: present
 
-- name: Expose Grafana with NodePort
-  kubernetes_core.k8s:
+- name: Create Grafana values file
+  copy:
+    dest: /tmp/grafana-values.yaml
+    content: |
+      service:
+        type: NodePort
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+      persistence:
+        enabled: true
+        size: 10Gi
+      datasources:
+        datasources.yaml:
+          apiVersion: 1
+          datasources:
+            - name: Prometheus
+              type: prometheus
+              url: http://prometheus-server.monitoring.svc.cluster.local:9090
+              isDefault: true
+
+- name: Install Grafana
+  kubernetes.core.helm:
+    name: grafana
+    chart_ref: grafana/grafana
+    release_namespace: monitoring
+    create_namespace: true
+    values_files:
+      - /tmp/grafana-values.yaml
+    wait: yes
+
+- name: Get Grafana admin password
+  kubernetes.core.k8s_info:
+    kind: Secret
     name: grafana
     namespace: monitoring
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: grafana
-        namespace: monitoring
-      spec:
-        type: NodePort
-        ports:
-          - port: 80
-            targetPort: 3000
-        selector:
-          app: grafana
-  become: true
+  register: grafana_secret
+
+- name: Display Grafana login credentials
+  debug:
+    msg: 
+      - "Username: admin"
+      - "Password: {{ grafana_secret.resources[0].data.admin_password | b64decode }}"

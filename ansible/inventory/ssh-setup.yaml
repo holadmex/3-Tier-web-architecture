@@ -1,0 +1,37 @@
+---
+- name: Configure SSH keys
+  hosts: all
+  become: true
+  tasks:
+    - name: Create .ssh directory
+      file:
+        path: /home/ubuntu/.ssh
+        state: directory
+        mode: '0700'
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Add SSH public key
+      ansible.posix.authorized_key:
+        user: ubuntu
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+
+    - name: Set correct permissions on authorized_keys
+      file:
+        path: /home/ubuntu/.ssh/authorized_keys
+        mode: '0600'
+        owner: ubuntu
+        group: ubuntu
+
+    #- name: Configure SSH keys without password
+      #hosts: all
+      #become: true
+      #vars:
+        #ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+      #tasks:
+        #- name: Copy SSH public key
+          #ansible.builtin.command: ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@{{ inventory_hostname }}
+          #delegate_to: localhost
+          #run_once: true
+          #ignore_errors: true

@@ -1,24 +1,66 @@
 ---
-- name: Install Prometheus using Helm
-  command:
-    cmd: helm install prometheus prometheus-community/kube-prometheus-stack
-  become: true
+- name: Create monitoring namespace
+  kubernetes.core.k8s:
+    name: monitoring
+    api_version: v1
+    kind: Namespace
+    state: present
 
-- name: Expose Prometheus with NodePort
-  kubernetes_core.k8s:
-    name: prometheus-server
-    namespace: monitoring
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: prometheus-server
-        namespace: monitoring
-      spec:
-        type: NodePort
-        ports:
-          - port: 80
-            targetPort: 9090
-        selector:
-          app: prometheus
-  become: true
+- name: Install Helm
+  block:
+    - name: Download Helm
+      get_url:
+        url: https://get.helm.sh/helm-v3.10.0-linux-amd64.tar.gz
+        dest: /tmp/helm.tar.gz
+
+    - name: Extract Helm
+      ansible.builtin.unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        remote_src: yes
+
+    - name: Move Helm binary  
+      copy:
+        src: /tmp/linux-amd64/helm
+        dest: /usr/local/bin/helm
+        mode: '0755'
+        remote_src: yes
+
+- name: Add Prometheus repository
+  kubernetes.core.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+    state: present
+
+- name: Create Prometheus values file
+  copy:
+    dest: /tmp/prometheus-values.yaml
+    content: |
+      prometheus:
+        service:
+          type: NodePort
+        resources:
+          requests:
+            memory: "512Mi"
+      grafana:
+        service:
+          type: NodePort
+        resources:
+          requests:
+            memory: "256Mi"
+      alertmanager:
+        service:
+          type: NodePort
+        resources:
+          requests:
+            memory: "128Mi"
+
+- name: Install Prometheus Stack
+  kubernetes.core.helm:
+    name: prometheus
+    chart_ref: prometheus-community/kube-prometheus-stack
+    release_namespace: monitoring
+    create_namespace: true
+    values_files:
+      - /tmp/prometheus-values.yaml
+    wait: yes

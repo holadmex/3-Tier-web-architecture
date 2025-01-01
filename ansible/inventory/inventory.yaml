@@ -1,6 +1,10 @@
 all:
   hosts:
     k8s-master:
-      ansible_host: <YOUR_KOPS_MASTER_IP>
+      ansible_host: 50.19.156.2
       ansible_user: ubuntu
-      ansible_ssh_private_key_file: ~/.ssh/<YOUR_PRIVATE_KEY>
+      ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_env:
+        KUBECONFIG: ~/.kube/config
+      

@@ -1,72 +1,48 @@
----
-- name: Install Elasticsearch using Helm
-  command:
-    cmd: helm install elasticsearch elastic/elasticsearch
-  become: true
+- name: Create logging namespace
+  kubernetes.core.k8s:
+    name: logging
+    api_version: v1
+    kind: Namespace
+    state: present
 
-- name: Install Logstash using Helm
-  command:
-    cmd: helm install logstash elastic/logstash
-  become: true
+- name: Add Elastic Helm repository
+  kubernetes.core.helm_repository:
+    name: elastic
+    repo_url: https://helm.elastic.co
+    state: present
 
-- name: Install Kibana using Helm
-  command:
-    cmd: helm install kibana elastic/kibana
-  become: true
-
-- name: Expose Elasticsearch with NodePort
-  kubernetes_core.k8s:
+- name: Deploy Elasticsearch
+  kubernetes.core.helm:
     name: elasticsearch
-    namespace: logging
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: elasticsearch
-        namespace: logging
-      spec:
-        type: NodePort
-        ports:
-          - port: 9200
-            targetPort: 9200
-        selector:
-          app: elasticsearch
-  become: true
+    chart_ref: elastic/elasticsearch
+    release_namespace: logging
+    values:
+      replicas: 1
+      resources:
+        requests:
+          memory: "1Gi"
+    wait: yes
 
-- name: Expose Logstash with NodePort
-  kubernetes_core.k8s:
+- name: Deploy Logstash
+  kubernetes.core.helm:
     name: logstash
-    namespace: logging
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: logstash
-        namespace: logging
-      spec:
-        type: NodePort
-        ports:
-          - port: 5044
-            targetPort: 5044
-        selector:
-          app: logstash
-  become: true
+    chart_ref: elastic/logstash
+    release_namespace: logging
+    values:
+      resources:
+        requests:
+          memory: "512Mi"
+    wait: yes
 
-- name: Expose Kibana with NodePort
-  kubernetes_core.k8s:
+- name: Deploy Kibana
+  kubernetes.core.helm:
     name: kibana
-    namespace: logging
-    definition:
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: kibana
-        namespace: logging
-      spec:
+    chart_ref: elastic/kibana
+    release_namespace: logging
+    values:
+      resources:
+        requests:
+          memory: "512Mi"
+      service:
         type: NodePort
-        ports:
-          - port: 5601
-            targetPort: 5601
-        selector:
-          app: kibana
-  become: true
+    wait: yes

@@ -4,16 +4,16 @@ pipeline {
     environment {
         FRONTEND_IMAGE = "your-frontend-image:latest"
         DOCKER_IMAGE = "your-image:latest"
-        AWS_ACCESS_KEY_ID = credentials('aws-key') // Jenkins credential ID for access key
-        AWS_SECRET_ACCESS_KEY = credentials('aws-key') // Jenkins credential ID for secret key
-        ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/frontend"
+        AWS_ACCESS_KEY_ID = credentials('xxx') // Jenkins credential ID for access key
+        AWS_SECRET_ACCESS_KEY = credentials('xxx') // Jenkins credential ID for secret key
+        ECR_REPO = ""
         ECS_TASK_DEFINITION = "task-web-app"
         ECS_CLUSTER =  "Full-stack-web-app"
         ECS_SERVICE = "web-app-service"
         AWS_REGION = "us-east-1"
         SONAR_PROJECT_KEY = "3-Tier-web-architecture"
         SONAR_ORG = "ecs-ci-cd"
-        SONAR_TOKEN = credentials('sonar-login') // Add token in Jenkins credentials
+        SONAR_TOKEN = credentials('xxx') // Add token in Jenkins credentials
         SONAR_SCANNER_PATH = '/opt/sonar-scanner/bin'
         PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin:${SONAR_SCANNER_PATH}"
     }
