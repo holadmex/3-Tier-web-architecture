@@ -4,7 +4,7 @@ metadata:
   name: frontend-deployment
   namespace: my-app-namespace
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: frontend
@@ -21,3 +21,10 @@ spec:
         env:
         - name: BACKEND_URL
           value: "http://backend-service.my-app-namespace.svc.cluster.local:5000"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m" 
+          limit:
+            memory: "2Gi"
+            cpu: "1"

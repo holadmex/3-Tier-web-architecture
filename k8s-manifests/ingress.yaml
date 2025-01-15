@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: frontend.yourdomain.com
+  - host: frontend.holadmexbobpro.online
     http:
       paths:
       - path: /
@@ -18,7 +18,7 @@ spec:
             name: frontend-service
             port:
               number: 80
-  - host: backend.yourdomain.com
+  - host: backend.holadmexbobpro.online
     http:
       paths:
       - path: /

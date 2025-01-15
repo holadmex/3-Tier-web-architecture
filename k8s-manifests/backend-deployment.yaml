@@ -4,7 +4,7 @@ metadata:
   name: backend-deployment
   namespace: my-app-namespace
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -29,3 +29,10 @@ spec:
             configMapKeyRef:
               name: app-config
               key: DATABASE_URL
+          resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m" 
+          limit:
+            memory: "2Gi"
+            cpu: "1"
