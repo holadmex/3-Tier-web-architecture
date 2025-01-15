@@ -7,11 +7,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: app1
   template:
     metadata:
       labels:
-        app: frontend
+        app: app1
+        function: frontend
     spec:
       containers:
       - name: frontend

@@ -7,11 +7,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: database
+      app: app1
   template:
     metadata:
       labels:
-        app: database
+        app: app1
+        function: database
     spec:
       containers:
       - name: database
