@@ -34,4 +34,4 @@ spec:
       targetPort: 443
       protocol: TCP
   selector:
-    app: frontend
+    app: app1
