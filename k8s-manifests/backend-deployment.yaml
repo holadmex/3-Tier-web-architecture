@@ -30,13 +30,14 @@ spec:
             configMapKeyRef:
               name: app-config
               key: DATABASE_URL
-          resources:
+        resources:
           requests:
             memory: "1Gi"
-            cpu: "500m" 
-          limit:
-            memory: "2Gi"
-            cpu: "1"
+            cpu: "500m"
+          #limits:
+            #memory: "2Mi"
+            #cpu: "1"
+
 
 
 

@@ -23,9 +23,9 @@ spec:
           requests:
             memory: "1Gi"
             cpu: "500m" 
-          limit:
-            memory: "2Gi"
-            cpu: "1"
+          #limits:
+            #memory: "2Mi"
+            #cpu: "1"
         env:
         - name: POSTGRES_USER
           value: "ecommerce"
