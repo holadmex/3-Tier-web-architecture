@@ -37,3 +37,37 @@ spec:
           limit:
             memory: "2Gi"
             cpu: "1"
+
+
+
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+  #name: backend-deployment
+  #namespace: my-app-namespace
+#spec:
+  #replicas: 1
+  #selector:
+    #matchLabels:
+      #app: app1
+  #template:
+    #metadata:
+      #labels:
+        #app: app1
+        #function: backend
+    #spec:
+      #containers:
+      #- name: backend
+        #image: holadmex/3-tier-web-architecture-backend:latest
+        #ports:
+        #- containerPort: 5000
+        #envFrom:
+        #- configMapRef:
+            #name: app-config
+          #resources:
+          #requests:
+            #memory: "1Gi"
+            #cpu: "500m" 
+          #limit:
+            #memory: "2Gi"
+            #cpu: "1"
