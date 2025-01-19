@@ -21,7 +21,7 @@ spec:
         - containerPort: 80
         env:
         - name: BACKEND_URL
-          value: "http://backend-service.my-app-namespace.svc.cluster.local:5000"
+          value: "http://backend-service.dev.svc.cluster.local:5000"
         resources:
           requests:
             memory: "512Mi"

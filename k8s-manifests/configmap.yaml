@@ -4,5 +4,5 @@ metadata:
   name: app-config
   namespace: dev
 data:
-  BACKEND_URL: "http://backend-service.my-app-namespace.svc.cluster.local:5000"
+  BACKEND_URL: "http://backend-service.dev.svc.cluster.local:5000"
   DATABASE_URI: "postgresql://ecommerce:testing123@database-service:5432/ecommerce_db"
