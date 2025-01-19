@@ -6,8 +6,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: app1
-      function: database # Matches the database pod's labels
+      app: postgres-db # Matches the database pod's labels
   policyTypes:
   - Ingress
   ingress:

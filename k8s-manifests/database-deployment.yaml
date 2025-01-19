@@ -7,12 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app1
+      app: postgres-db
   template:
     metadata:
       labels:
-        app: app1
-        function: database
+        app: postgres-db
     spec:
       containers:
       - name: database
