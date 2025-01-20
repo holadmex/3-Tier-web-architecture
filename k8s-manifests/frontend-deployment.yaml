@@ -22,6 +22,7 @@ spec:
         env:
         - name: BACKEND_URL
           value: "http://backend-service.dev.svc.cluster.local:5000"
+          #value: "https://api.dev.holadmexbobpro.online" 
         resources:
           requests:
             memory: "512Mi"

@@ -25,17 +25,19 @@ spec:
   #namespace: dev
   #annotations:
     #service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
-    #service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-    #service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:REGION:ACCOUNT_ID:certificate/CERTIFICATE_ID
     #service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+    #service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:"
+    #service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
 #spec:
   #type: LoadBalancer
   #ports:
-    #- port: 80
+    #- name: http
+      #port: 80
       #targetPort: 80
       #protocol: TCP
-    #- port: 443
-      #targetPort: 443
+    #- name: https
+      #port: 443
+      #targetPort: 80  # Change this to 80 if your app doesn't handle SSL
       #protocol: TCP
   #selector:
-    #app: app1
+    #app: frontend

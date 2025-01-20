@@ -39,4 +39,8 @@ spec:
       - name: db-storage
         persistentVolumeClaim:
           claimName: db-pvc
+        #- name: db-storage
+          #emptyDir: {}
+
         
+
