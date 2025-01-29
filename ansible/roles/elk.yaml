@@ -2,7 +2,6 @@
   kubernetes.core.k8s:
     kubeconfig: "/home/ubuntu/.kube/config"
     name: logging
-    api_version: v1
     kind: Namespace
     state: present
 
@@ -11,8 +10,6 @@
     name: elastic
     repo_url: https://helm.elastic.co
     state: present
-  environment:
-    KUBECONFIG: "/home/ubuntu/.kube/config"
 
 - name: Deploy Elasticsearch
   kubernetes.core.helm:
@@ -23,9 +20,13 @@
       replicas: 1
       resources:
         requests:
+          cpu: "500m"
           memory: "1Gi"
+        limits:
+          cpu: "1"
+          memory: "2Gi"
     wait: yes
-    timeout: 600s  # Fixed timeout format
+    timeout: 600
   environment:
     KUBECONFIG: "/home/ubuntu/.kube/config"
 
@@ -37,9 +38,13 @@
     values:
       resources:
         requests:
+          cpu: "250m"
           memory: "512Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
     wait: yes
-    timeout: 600s  # Fixed timeout format
+    timeout: 600
   environment:
     KUBECONFIG: "/home/ubuntu/.kube/config"
 
@@ -51,10 +56,14 @@
     values:
       resources:
         requests:
+          cpu: "250m"
           memory: "512Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
       service:
         type: NodePort
     wait: yes
-    timeout: 600s  # Fixed timeout format
+    timeout: 600
   environment:
     KUBECONFIG: "/home/ubuntu/.kube/config"
