@@ -23,9 +23,9 @@
       replicas: 1
       resources:
         requests:
-          memory: "512Mi"
+          memory: "1Gi"
     wait: yes
-    timeout: 300s  # Fixed timeout format
+    timeout: 600s  # Fixed timeout format
   environment:
     KUBECONFIG: "/home/ubuntu/.kube/config"
 
@@ -39,7 +39,7 @@
         requests:
           memory: "512Mi"
     wait: yes
-    timeout: 300s  # Fixed timeout format
+    timeout: 600s  # Fixed timeout format
   environment:
     KUBECONFIG: "/home/ubuntu/.kube/config"
 
@@ -55,6 +55,6 @@
       service:
         type: NodePort
     wait: yes
-    timeout: 300s  # Fixed timeout format
+    timeout: 600s  # Fixed timeout format
   environment:
     KUBECONFIG: "/home/ubuntu/.kube/config"
