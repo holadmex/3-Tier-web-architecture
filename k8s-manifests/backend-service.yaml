@@ -5,7 +5,7 @@ metadata:
   namespace: dev
 spec:
   selector:
-    app: app1
+    app: backend
   ports:
     - protocol: TCP
       port: 5000
