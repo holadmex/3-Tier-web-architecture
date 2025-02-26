@@ -48,10 +48,7 @@ jobs:
 #helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
 
 
-
-
-
-=================================
+#=======================================================
 
 #name: Deploy Frontend to EKS
 #
