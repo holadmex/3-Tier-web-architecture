@@ -41,7 +41,7 @@ jobs:
     # ✅ Authenticate to EKS
     - name: Authenticate with EKS Cluster
       run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
+        aws eks update-kubeconfig --name my-dev-eks-cluster --region us-east-1
 
     # ✅ Deploy via Helm (Uses Existing Image in Manifest)
     - name: Deploy Frontend with Helm
