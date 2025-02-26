@@ -1,0 +1,123 @@
+name: Deploy Frontend to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+    # ✅ Configure AWS Credentials
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.ASSUME_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # ✅ Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # ✅ Install Dependencies
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y awscli
+        curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+
+    # ✅ Authenticate to EKS
+    - name: Authenticate with EKS Cluster
+      run: |
+        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
+
+    # ✅ Deploy via Helm (Uses Existing Image in Manifest)
+    - name: Deploy Frontend with Helm
+      run: |
+        helm upgrade --install frontend-release helm/frontend-chart
+
+#helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
+
+
+
+
+
+=================================
+
+#name: Deploy Frontend to EKS
+#
+#on:
+  #push:
+    #branches:
+      #- main  # Adjust based on your branch strategy
+#
+#permissions:
+  #id-token: write
+  #contents: read
+#
+#jobs:
+  #deploy:
+    #runs-on: ubuntu-latest
+    #steps:
+#
+    ## ✅ Configure AWS Credentials via OIDC
+    #- name: Configure AWS Credentials
+      #uses: aws-actions/configure-aws-credentials@v2
+      #with:
+        #role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/YOUR_OIDC_ROLE
+        #aws-region: YOUR_AWS_REGION
+#
+    ## ✅ Checkout Code
+    #- name: Checkout Code
+      #uses: actions/checkout@v4
+#
+    ## ✅ Install Dependencies (kubectl, Helm, AWS CLI)
+    #- name: Install Dependencies
+      #run: |
+        #sudo apt-get update
+        #sudo apt-get install -y awscli
+        #curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        #curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        #chmod +x kubectl
+        #sudo mv kubectl /usr/local/bin/
+#
+    ## ✅ Authenticate to EKS
+    #- name: Authenticate with EKS Cluster
+      #run: |
+        #aws eks update-kubeconfig --name YOUR_EKS_CLUSTER_NAME --region YOUR_AWS_REGION
+#
+    ## ✅ Build & Push Docker Image (ECR or Docker Hub)
+    #- name: Login to Container Registry
+      #run: |
+        #echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+#
+    #- name: Build and Push Image
+      #run: |
+        #IMAGE_TAG=$(git rev-parse --short HEAD)
+        #IMAGE_REPO="holadmex/3-tier-web-architecture-frontend"
+#        
+        #docker build -t $IMAGE_REPO:$IMAGE_TAG -f Dockerfile .
+        #docker push $IMAGE_REPO:$IMAGE_TAG
+#
+        #echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+#
+    ## ✅ Deploy via Helm with Updated Image Tag
+    #- name: Deploy to EKS using Helm
+      #run: |
+        #helm upgrade --install frontend-release helm/frontend-chart \
+          #--set image.repository="holadmex/3-tier-web-architecture-frontend" \
+          #--set image.tag=${{ env.IMAGE_TAG }} \
+          #--namespace dev --create-namespace
+
+
+
+
