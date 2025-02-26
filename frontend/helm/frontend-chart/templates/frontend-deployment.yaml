@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 80
+        env:
+        - name: BACKEND_URL
+          value: "http://backend-service.dev.svc.cluster.local:5000"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m" 
+          #limits:
+            #memory: "2Mi"
+            #cpu: "1"

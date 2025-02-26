@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: dev
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:429841094792:certificate/711cb71f-8785-4562-b723-1dcef1046740"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 80  # Change this to 80 if your app doesn't handle SSL
+      protocol: TCP
+  selector:
+    app: frontend
+
+
+
+#apiVersion: v1
+#kind: Service
+#metadata:
+  #name: frontend-service
+  #namespace: dev 
+  #labels:
+    #app: frontend
+#spec:
+  #type: NodePort
+  #ports:
+    #- port: 80        
+      #targetPort: 80   
+      #nodePort: 30600  
+      #protocol: TCP
+  #selector:
+    #app: frontend
+
