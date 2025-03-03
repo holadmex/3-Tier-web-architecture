@@ -1,32 +1,32 @@
-#name: Test OIDC Connectivity
-#
+name: Test OIDC Connectivity
+
 #on:
-  #push:
+  push:
     #branches:
-      #- main  # Trigger on push to main branch
-  #workflow_dispatch:  # Allows manual triggering
-#
-#jobs:
-  #test-oidc:
-    #runs-on: ubuntu-latest
-    #permissions:
-      #id-token: write  # REQUIRED for OIDC authentication
-      #contents: read
-    #steps:
-      #- name: Request OIDC Token
-        #id: oidc-token
-        #run: |
-          #TOKEN=$(curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            #"${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r .value)
-          #echo "OIDC_TOKEN=${TOKEN}" >> $GITHUB_ENV
-#
-      #- name: Print OIDC Token (For Debugging)
-        #run: echo $OIDC_TOKEN | cut -c1-20  # Only show first 20 characters for security
-#
-      #- name: Assume AWS Role
-        #run: |
-          #aws sts assume-role-with-web-identity \
-            #--role-arn ${{ secrets.ASSUME_ROLE }} \
-            #--role-session-name "GitHubActionsSession" \
-            #--web-identity-token "$OIDC_TOKEN" \
-            #--duration-seconds 900
+      #- main  
+  #workflow_dispatch: 
+
+jobs:
+  test-oidc:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  
+      contents: read
+    steps:
+      - name: Request OIDC Token
+        id: oidc-token
+        run: |
+          TOKEN=$(curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r .value)
+          echo "OIDC_TOKEN=${TOKEN}" >> $GITHUB_ENV
+
+      - name: Print OIDC Token (For Debugging)
+        run: echo $OIDC_TOKEN | cut -c1-20  
+
+      - name: Assume AWS Role
+        run: |
+          aws sts assume-role-with-web-identity \
+            --role-arn ${{ secrets.ASSUME_ROLE }} \
+            --role-session-name "GitHubActionsSession" \
+            --web-identity-token "$OIDC_TOKEN" \
+            --duration-seconds 900

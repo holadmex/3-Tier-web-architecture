@@ -14,18 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    # ✅ Configure AWS Credentials
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.ASSUME_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
 
-    # ✅ Checkout Code
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # ✅ Install Dependencies
     - name: Install Dependencies
       run: |
         sudo apt-get update
@@ -38,12 +35,10 @@ jobs:
         chmod +x kubectl
         sudo mv kubectl /usr/local/bin/
 
-    # ✅ Authenticate to EKS
     - name: Authenticate with EKS Cluster
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
 
-    # ✅ Deploy via Helm (Uses Existing Image in Manifest)
     - name: Deploy Frontend with Helm
       run: |
         helm upgrade --install frontend-release ./frontend/helm/frontend-chart
