@@ -64,18 +64,15 @@ jobs:
     #runs-on: ubuntu-latest
     #steps:
 #
-    ## ✅ Configure AWS Credentials via OIDC
     #- name: Configure AWS Credentials
       #uses: aws-actions/configure-aws-credentials@v2
       #with:
         #role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/YOUR_OIDC_ROLE
         #aws-region: YOUR_AWS_REGION
 #
-    ## ✅ Checkout Code
     #- name: Checkout Code
       #uses: actions/checkout@v4
 #
-    ## ✅ Install Dependencies (kubectl, Helm, AWS CLI)
     #- name: Install Dependencies
       #run: |
         #sudo apt-get update
@@ -85,12 +82,10 @@ jobs:
         #chmod +x kubectl
         #sudo mv kubectl /usr/local/bin/
 #
-    ## ✅ Authenticate to EKS
     #- name: Authenticate with EKS Cluster
       #run: |
         #aws eks update-kubeconfig --name YOUR_EKS_CLUSTER_NAME --region YOUR_AWS_REGION
 #
-    ## ✅ Build & Push Docker Image (ECR or Docker Hub)
     #- name: Login to Container Registry
       #run: |
         #echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
@@ -105,7 +100,6 @@ jobs:
 #
         #echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 #
-    ## ✅ Deploy via Helm with Updated Image Tag
     #- name: Deploy to EKS using Helm
       #run: |
         #helm upgrade --install frontend-release helm/frontend-chart \
