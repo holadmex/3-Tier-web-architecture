@@ -87,9 +87,7 @@ The evolution from traditional development and operations silos to integrated De
 
 For this project, you'll need to install the following tools and technologies on your Linux Machine (Debian, Ubuntu or WSL):
 
-# Ubuntu Installation Guide
-
-Quick installation instructions for common DevOps tools on Ubuntu.
+# Installation Guide
 
 ## Python
 
