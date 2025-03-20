@@ -171,7 +171,7 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
 sudo c
 ```
-## Tools Covered in This Project
+## Tools Covered in These Project are as follows:
 
 - Python
 - Nginx
