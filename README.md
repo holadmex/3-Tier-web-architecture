@@ -85,16 +85,91 @@ The evolution from traditional development and operations silos to integrated De
 
 ## Prerequisites and Installation
 
-For this project, you'll need to install the following tools and technologies on your Linux Machine (Mac, Ubuntu or WSL):
+For this project, you'll need to install the following tools and technologies on your Linux Machine (Debian, Ubuntu or WSL):
 
-- Python (Google search Python download)
-- Docker (Check with docker official documentation for installation)
-- Nginx  (sudo apt install nginx -y)
-- AWS CLI
-- Kubectl
-- Kops
-- Ansible
-- Terraform
+# Ubuntu Installation Guide
+
+Quick installation instructions for common DevOps tools on Ubuntu.
+
+## Python
+
+```bash
+# Update package index
+sudo apt update
+
+# Install Python and pip
+sudo apt install -y python3 python3-pip python3-venv
+
+# Create symbolic link (optional)
+sudo ln -s /usr/bin/python3 /usr/bin/python
+
+# Verify installation
+python3 --version
+pip3 --version
+```
+
+## Docker
+
+```bash
+# Update package index
+sudo apt update
+
+# Install prerequisites
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+
+# Add Docker GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# Add Docker repository
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+# Install Docker
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+
+# Add current user to docker group (optional)
+sudo usermod -aG docker $USER
+```
+
+## Nginx
+
+```bash
+# Install Nginx
+sudo apt update
+sudo apt install -y nginx
+
+# Start and enable Nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+## AWS CLI
+
+```bash
+# Install dependencies
+sudo apt update
+sudo apt install -y unzip
+
+# Download and install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+
+## Kubectl
+
+```bash
+# Download and install kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+
+## Kops
+
+```bash
+# Download and install kops
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+sudo c
 
 ## Tools Covered in This Project
 

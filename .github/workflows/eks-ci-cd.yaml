@@ -1,9 +1,9 @@
 name: Deploy Frontend to EKS
 
-on:
-  push:
-    branches:
-      - main
+#on:
+  #push:
+    #branches:
+      #- main
 
 permissions:
   id-token: write
