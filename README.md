@@ -100,9 +100,6 @@ sudo apt update
 # Install Python and pip
 sudo apt install -y python3 python3-pip python3-venv
 
-# Create symbolic link (optional)
-sudo ln -s /usr/bin/python3 /usr/bin/python
-
 # Verify installation
 python3 --version
 pip3 --version
@@ -138,9 +135,8 @@ sudo usermod -aG docker $USER
 sudo apt update
 sudo apt install -y nginx
 
-# Start and enable Nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
+# Confirm Nginx Installation
+sudo systemctl status nginx
 ```
 
 ## AWS CLI
@@ -161,15 +157,23 @@ sudo ./aws/install
 ```bash
 # Download and install kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+ls - (./kubectl)
+chmod +x ./kubectl
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+sudo mv kubectl /usr/local/bin/
+kubectl --help 
 ```
 
 ## Kops
 
 ```bash
 # Download and install kops
-curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-sudo c
+wget https://github.com/kubernetes/kops/releases/download/v1.26.4/kops-linux-amd64
+ls - (kops.linux.amd64)
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+kops --help
 ```
 ## Tools Covered in These Project are as follows:
 
@@ -192,7 +196,7 @@ sudo c
 
 ### Step 1: Accessing the Codebase
 
-Begin by cloning the repository to your local machine after receiving access to the project code from the Development team.
+Begin by cloning the repository to your local machine after receiving access to the project URL from the Development team.
 
 ### Step 2: Exploring the Frontend
 
