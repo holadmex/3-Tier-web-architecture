@@ -187,24 +187,16 @@ kops --help
 - Terraform
 - Kubernetes
 
-## Project Implementation Guide
+## Project Implementation Guide In Running the Full Stack Application Locally
+
+To get your application up and running locally, you'll need to run three components simultaneously: the PostgreSQL database, the backend server, and the frontend application. Here's how to manage all these components and verify the full workflow:
 
 ### Step 1: Accessing the Codebase
 
 We'll need to clone the repository to our local machine after receiving access to the project URL from the Development team.
 
-### Step 2: Exploring the Frontend
 
-To understand the user interface that end users will interact with:
-
-1. Navigate to the frontend code directory
-2. Start a local server to view the application:
-   ```bash
-   python3 -m http.server 8000
-   ```
-   Note: You can change port 8000 to any available port of your choice.
-
-### Step 3: Setting Up the Development Database
+### Step 2: Setting Up the Development Database
 
 To properly test backend functionality, set up a local PostgreSQL database:
 
@@ -248,7 +240,7 @@ GRANT ALL PRIVILEGES ON DATABASE ecommerce_db TO ecommerce;
 
 #### Extended Privileges for Development
 
-For the development environment, you may need to grant additional privileges:
+For the development environment, you will need to grant additional privileges:
 
 ```sql
 -- Grant superuser privileges (use with caution in production)
@@ -266,31 +258,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ecommerce;
 \q
 ```
 
-#### Connecting to Your Database
-
-```bash
-# Connect to local database
-psql -U ecommerce -d ecommerce_db
-
-# Connect to AWS RDS database (for production)
-psql -h ecommercedb.c3wg8iqs6i9d.us-east-1.rds.amazonaws.com -U ecommerce -d postgres
-```
-
-#### Useful PostgreSQL Commands
-
-```sql
-\du   -- List all database users and their roles
-\d    -- List all relations
-\l    -- List all databases
-\c    -- Switch database
-\d <table_name>   -- Describe a specific table
-
--- Query examples
-SELECT * FROM "user";
-SELECT * FROM "user" WHERE email = 'test@example.com';
-```
-
-#### Configuration File Modifications
+#### PostgreSQLConfiguration File Modifications Before Connecting to Your Database
 
 For proper database connectivity, especially in development environments, you'll need to edit two key configuration files:
 
@@ -311,6 +279,22 @@ Remember to restart PostgreSQL after making configuration changes:
 sudo systemctl restart postgresql
 ```
 
+#### Connecting to Your Database
+
+```bash
+# Connect to local database
+psql -U ecommerce -d ecommerce_db
+```
+
+#### Useful PostgreSQL Commands
+
+```sql
+\du   -- List all database users and their roles
+\d    -- List all relations
+\l    -- List all databases
+```
+
+
 ### Important Production Considerations
 
 For production environments, carefully evaluate the permissions granted to database users. While superuser privileges simplify development, they should be limited in production to follow the principle of least privilege. Consider creating specific roles with only the necessary permissions for your application's functionality.
@@ -318,9 +302,29 @@ For production environments, carefully evaluate the permissions granted to datab
 Additionally, ensure proper network security configurations when exposing database connections beyond localhost, particularly when using cloud-based database services like AWS RDS.
 
 
-# Backend Setup and Configuration
+### Step 3: Exploring the Frontend
+
+To understand the user interface that end users will interact with:
+
+1. Navigate to the frontend code directory
+2. Start a local server to view the application:
+   ```bash
+   python3 -m http.server 8000
+   ```
+   Note: You can change port 8000 to any available port of your choice.
+
+## Access the Frontend in Your Browser
+
+Open your web browser and navigate to the frontend application:
+
+If using Python's http.server: `http://localhost:8000`
+
+
+### Step 4: Backend Setup and Configuration
 
 After setting up the database, the next step is to configure and run the backend code. Using a Python virtual environment is recommended to isolate dependencies and avoid conflicts.
+
+## NB: Open a new terminal window (keep the frontend terminal running) and navigate to your backend directory
 
 ## Python Virtual Environment Setup
 
@@ -345,49 +349,17 @@ pip install flask Flask-Cors Flask-SQLAlchemy Flask-Migrate bcrypt python-dotenv
 pip install -r requirements.txt
 ```
 
-## Requirements.txt File Contents
+## Start the backend server:
 
-```
-Flask
-Flask-Cors
-Flask-SQLAlchemy
-bcrypt
-python-dotenv
-Flask-Migrate
-psycopg2-binary
-```
+`python app.py`
 
-## Environment Configuration (.env file)
+You should see output indicating that your Flask application is running, typically on port 5000.
 
-The `.env` file stores configuration variables separately from the source code, enhancing security by keeping sensitive information out of the codebase.
+## Sign Up a New User
 
-### Key Components:
+Navigate to the frontend web page on your broswer, on the signup page on your web application, and create a user account. If everything is configured correctly, you should see a success message or be redirected to a login page.
 
-1. **DATABASE_URI**:
-   ```
-   DATABASE_URI=postgresql://ecommerce:password@127.0.0.1:5432/ecommerce_db
-   ```
-   This connection string consists of:
-   - Protocol: `postgresql://`
-   - Username: `ecommerce`
-   - Password: `password`
-   - Host: `127.0.0.1` (localhost)
-   - Port: `5432` (default PostgreSQL port)
-   - Database name: `ecommerce_db`
-
-2. **SECRET_KEY**:
-   ```
-   SECRET_KEY=your_secret_key
-   ```
-   Used by Flask to encrypt session data and secure information.
-
-   Generate a secure key with:
-   ```bash
-   python -c "import secrets; print(secrets.token_hex(16))"
-   ```
-   Example output: `5f2bb3d6b08b5a741be3e659cd804c8e`
-
-## Database Verification Commands
+## Next Step: Verify Data in PostgreSQL; Database Verification Commands
 
 Connect to your database and verify the data:
 ```bash
@@ -452,3 +424,18 @@ flask db upgrade
 ```
 
 These steps will help you properly set up, run, and test your backend application, ensuring it connects correctly to the PostgreSQL database and responds to API requests as expected.
+
+
+#### Useful PostgreSQL Commands
+
+```sql
+\du   -- List all database users and their roles
+\d    -- List all relations
+\l    -- List all databases
+\c    -- Switch database
+\d <table_name>   -- Describe a specific table
+
+-- Query examples
+SELECT * FROM "user";
+SELECT * FROM "user" WHERE email = 'test@example.com';
+```
