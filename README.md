@@ -373,7 +373,7 @@ SELECT * FROM "user";
 SELECT * FROM "user" WHERE email = 'test@example.com';
 ```
 
-## Containerization of both frontend and backend
+## Docker Containerization of both Frontend and Backend
 
 ```bash
 cd frontend
