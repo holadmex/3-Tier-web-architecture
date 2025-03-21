@@ -23,7 +23,7 @@ The backend serves as the intermediary layer of the web application that process
 - Search functionality
 - Data processing
 
-Consider a scenario where a new user visits Amazon.com and creates an account. The signup form displayed on the website is rendered by the frontend. Upon submission, the request travels to the backend, which processes the information and returns a "successfully created account" message to the user.
+Consider a scenario where a new user visits Amazon.com and creates an account. The signup form displayed on the website is rendered by the frontend. Upon submission, the request travels to the backend, which processes the information and returns a "Successfully created account" message to the user.
 
 Beyond handling requests, the backend prepares data for storage in the database, organizing information into tables with rows and columns. Database schemas define these structures, ensuring proper data organization and management.
 
@@ -80,12 +80,9 @@ By implementing DevOps practices, organizations can achieve faster deployments, 
 The evolution from traditional development and operations silos to integrated DevOps practices represents a significant advancement in software engineering. By understanding the core components of web development—frontend, backend, and database—along with modern deployment methodologies, teams can build and maintain more resilient, scalable, and user-friendly applications.
 
 
+# Below Are The Prerequisites Installation Needed For This Project:
 
-# DevOps: Bridging the Gap Between Development and Operations (Continued)
-
-## Prerequisites and Installation
-
-For this project, you'll need to install the following tools and technologies on your Linux Machine (Debian, Ubuntu or WSL):
+For this project, we'll need to install the following tools and technologies on our Linux Machine (Debian, Ubuntu or WSL):
 
 # Installation Guide
 
@@ -173,7 +170,7 @@ chmod +x kops-linux-amd64
 sudo mv kops-linux-amd64 /usr/local/bin/kops
 kops --help
 ```
-## Tools Covered in These Project are as follows:
+## Tools & Cloud Provider Services Covered in These Project are as follows:
 
 - Python
 - Nginx
@@ -194,7 +191,7 @@ kops --help
 
 ### Step 1: Accessing the Codebase
 
-Begin by cloning the repository to your local machine after receiving access to the project URL from the Development team.
+We'll need to clone the repository to our local machine after receiving access to the project URL from the Development team.
 
 ### Step 2: Exploring the Frontend
 
@@ -295,13 +292,13 @@ SELECT * FROM "user" WHERE email = 'test@example.com';
 
 #### Configuration File Modifications
 
-For proper database connectivity, especially in production environments, you'll need to edit two key configuration files:
+For proper database connectivity, especially in development environments, you'll need to edit two key configuration files:
 
 1. Client Authentication Configuration:
    ```bash
    sudo nano /etc/postgresql/16/main/pg_hba.conf
    ```
-   Modify this file to change peer connection settings, allowing your created user to access the database.
+   Modify this file to change all `peer` connection settings, to `md5` allowing your created user to access the database with the registered password.
 
 2. PostgreSQL Server Configuration:
    ```bash
@@ -342,7 +339,7 @@ source venv/bin/activate
 python -m pip install --upgrade pip
 
 # Install required packages individually
-pip install flask flask_sqlalchemy flask_cors bcrypt python-dotenv psycopg2-binary
+pip install flask Flask-Cors Flask-SQLAlchemy Flask-Migrate bcrypt python-dotenv psycopg2-binary
 
 # Alternative: Install from requirements.txt
 pip install -r requirements.txt
@@ -351,11 +348,13 @@ pip install -r requirements.txt
 ## Requirements.txt File Contents
 
 ```
-Flask==2.3.2
-Flask-SQLAlchemy==3.0.0
-Flask-Migrate==4.0.0
-Flask-Bcrypt==1.0.0
-psycopg2-binary==2.9.3
+Flask
+Flask-Cors
+Flask-SQLAlchemy
+bcrypt
+python-dotenv
+Flask-Migrate
+psycopg2-binary
 ```
 
 ## Environment Configuration (.env file)
@@ -387,33 +386,6 @@ The `.env` file stores configuration variables separately from the source code, 
    python -c "import secrets; print(secrets.token_hex(16))"
    ```
    Example output: `5f2bb3d6b08b5a741be3e659cd804c8e`
-
-## API Testing with Postman
-
-After starting your backend application with `python app.py`, test the API endpoints:
-
-### Signup Endpoint
-- URL: `http://127.0.0.1:5000/signup`
-- Method: POST
-- Body (JSON):
-  ```json
-  {
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "hithere123"
-  }
-  ```
-
-### Login Endpoint
-- URL: `http://127.0.0.1:5000/login`
-- Method: POST
-- Body (JSON):
-  ```json
-  {
-    "email": "test@example.com",
-    "password": "hithere123"
-  }
-  ```
 
 ## Database Verification Commands
 
