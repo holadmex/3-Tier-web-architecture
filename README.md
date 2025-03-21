@@ -187,7 +187,7 @@ kops --help
 - Terraform
 - Kubernetes
 
-## Project Implementation Guide In Running the Full Stack Application Locally
+## Project Implementation Guide Running the Full Stack Application Locally
 
 To get your application up and running locally, you'll need to run three components simultaneously: the PostgreSQL database, the backend server, and the frontend application. Here's how to manage all these components and verify the full workflow:
 
