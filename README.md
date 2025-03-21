@@ -123,17 +123,6 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io
 sudo usermod -aG docker $USER
 ```
 
-## Nginx
-
-```bash
-# Install Nginx
-sudo apt update
-sudo apt install -y nginx
-
-# Confirm Nginx Installation
-sudo systemctl status nginx
-```
-
 ## AWS CLI
 
 ```bash
@@ -294,13 +283,11 @@ psql -U ecommerce -d ecommerce_db
 \l    -- List all databases
 ```
 
-
 ### Important Production Considerations
 
 For production environments, carefully evaluate the permissions granted to database users. While superuser privileges simplify development, they should be limited in production to follow the principle of least privilege. Consider creating specific roles with only the necessary permissions for your application's functionality.
 
 Additionally, ensure proper network security configurations when exposing database connections beyond localhost, particularly when using cloud-based database services like AWS RDS.
-
 
 ### Step 3: Exploring the Frontend
 
@@ -381,19 +368,31 @@ psql -U ecommerce -d ecommerce_db
 # Describe a specific table
 \d user
 
-# Query examples
+# Data Query in our PostgreSQL Database
 SELECT * FROM "user";
 SELECT * FROM "user" WHERE email = 'test@example.com';
 ```
 
-## Docker Containerization
+## Containerization both frontend and backend
 
 ```bash
+cd frontend
+
 # Build the frontend Docker image
 docker build -t frontend .
 
 # Run the frontend container
 docker run -d --name web -p 80:80 frontend
+```
+
+```bash
+cd backend
+
+# Build the backend Docker image
+docker build -t backend .
+
+# Run the backend container
+docker run -d --name web -p 5000:5000 backend
 ```
 
 ## Database Migration Management
@@ -426,16 +425,3 @@ flask db upgrade
 These steps will help you properly set up, run, and test your backend application, ensuring it connects correctly to the PostgreSQL database and responds to API requests as expected.
 
 
-#### Useful PostgreSQL Commands
-
-```sql
-\du   -- List all database users and their roles
-\d    -- List all relations
-\l    -- List all databases
-\c    -- Switch database
-\d <table_name>   -- Describe a specific table
-
--- Query examples
-SELECT * FROM "user";
-SELECT * FROM "user" WHERE email = 'test@example.com';
-```
