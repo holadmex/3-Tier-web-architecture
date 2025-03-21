@@ -258,7 +258,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ecommerce;
 \q
 ```
 
-#### PostgreSQLConfiguration File Modifications Before Connecting to Your Database
+#### PostgreSQL Configuration File Modifications Before Connecting to Your Newly Created Database
 
 For proper database connectivity, especially in development environments, you'll need to edit two key configuration files:
 
