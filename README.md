@@ -395,6 +395,41 @@ docker build -t backend .
 docker run -d --name web -p 5000:5000 backend
 ```
 
+## Integration of Docker Compose for our Full-Stack Application Deployment
+Docker Compose provides a convenient way to orchestrate multiple containers that make up your application stack. For our e-commerce application, we'll use Docker Compose to configure and link three essential components: the PostgreSQL database, the backend Flask API, and the frontend web interface.
+
+
+### Environment Configuration Changes
+Backend `.env` File Modifications
+The key modification for Docker networking is changing the database host from localhost or 127.0.0.1 to the service name db as defined in the docker-compose.yml file:
+
+```bash
+- DATABASE_URI=postgresql://ecommerce:password@127.0.0.1:5432/ecommerce_db
++ DATABASE_URI=postgresql://ecommerce:password@db:5432/ecommerce_db
+```
+
+In the Docker Compose setup, we're passing this as an environment variable directly to the container, eliminating the need for a .env file in the Docker image.
+
+### Running the Dockerized Application
+
+```bash
+NB: Make sure you are at the project root directory to execute thess command.
+
+To start the entire stack with Docker Compose:
+
+<docker-compose up -d>
+OR
+<docker compose build>
+
+To stop the entire stack with DOcker Compose:
+
+<docker compose down>
+
+After starting the stack with <docker-compose up -d>, navigate to http://localhost in your browser to access you frontend home page as we did earlier at the begining of the lcoal test setup.
+```
+
+
+
 ## Database Migration Management
 
 Flask-Migrate helps manage database schema changes:
