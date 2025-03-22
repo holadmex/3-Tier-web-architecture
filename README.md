@@ -430,7 +430,7 @@ After starting the stack with <docker-compose up -d>, navigate to http://localho
 
 
 
-## Database Migration Management
+## Database Migration Management: THis is most likey (optional) while having some error's in trying to create a user account on the web page, right after spinning up the full stack container's with `docker compose up` 
 
 Flask-Migrate helps manage database schema changes:
 
