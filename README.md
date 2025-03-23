@@ -344,7 +344,7 @@ You should see output indicating that your Flask application is running, typical
 
 ## Sign Up a New User
 
-Navigate to the frontend web page on your broswer, on the signup page on your web application, and create a user account. If everything is configured correctly, you should see a success message or be redirected to a login page.
+Navigate to the frontend web page on your browser, on the signup page on your web application, and create a user account. If everything is configured correctly, you should see a success message or be redirected to a login page.
 
 ## Next Step: Verify Data in PostgreSQL; Database Verification Commands
 
@@ -410,10 +410,10 @@ The key modification for Docker networking is changing the database host from lo
 
 In the Docker Compose setup, we're passing this as an environment variable directly to the container, eliminating the need for a .env file in the Docker image.
 
-### Running the Dockerized Application
+### Running the Dockerize Application
 
 ```bash
-NB: Make sure you are at the project root directory to execute thess command.
+NB: Make sure you are at the project root directory to execute theses command.
 
 To start the entire stack with Docker Compose:
 
@@ -421,18 +421,18 @@ To start the entire stack with Docker Compose:
 OR
 <docker compose build>
 
-To stop the entire stack with DOcker Compose:
+To stop the entire stack with Docker Compose:
 
 <docker compose down>
 
-After starting the stack with <docker-compose up -d>, navigate to http://localhost in your browser to access you frontend home page as we did earlier at the begining of the lcoal test setup.
+After starting the stack with <docker-compose up -d>, navigate to http://localhost in your browser to access you frontend home page as we did earlier at the beginning of the local test setup.
 ```
 
 
 
 ## Database Migration Management 
 
-This is most likey (optional) while having some error's in trying to create a user account on the web page, right after spinning up the full stack container's with `docker compose up` 
+This is most likely (optional) while having some error's in trying to create a user account on the web page, right after spinning up the full stack container's with `docker compose up` 
 
 ## Flask-Migrate helps manage database schema changes:
 
