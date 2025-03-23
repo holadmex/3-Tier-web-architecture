@@ -396,7 +396,7 @@ docker run -d --name web -p 5000:5000 backend
 ```
 
 ## Integration of Docker Compose for our Full-Stack Application Deployment
-Docker Compose provides a convenient way to orchestrate multiple containers that make up your application stack. For our e-commerce application, we'll use Docker Compose to configure and link three essential components: the PostgreSQL database, the backend Flask API, and the frontend web interface.
+Docker Compose provides a convenient way to orchestrate multiple containers that make up your application stack. For our e-commerce application, we'll use Docker Compose to configure and link these three essential components: the PostgreSQL database, the backend Flask API, and the frontend web interface.
 
 
 ### Environment Configuration Changes
@@ -430,9 +430,11 @@ After starting the stack with <docker-compose up -d>, navigate to http://localho
 
 
 
-## Database Migration Management: THis is most likey (optional) while having some error's in trying to create a user account on the web page, right after spinning up the full stack container's with `docker compose up` 
+## Database Migration Management 
 
-Flask-Migrate helps manage database schema changes:
+This is most likey (optional) while having some error's in trying to create a user account on the web page, right after spinning up the full stack container's with `docker compose up` 
+
+## Flask-Migrate helps manage database schema changes:
 
 ```bash
 # Install Flask-Migrate
