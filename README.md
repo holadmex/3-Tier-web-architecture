@@ -86,7 +86,7 @@ For this project, we'll need to install the following tools and technologies on 
 
 # Installation Guide
 
-## Python
+## Python to be installed on PC, or Linux(Ubuntu)
 
 ```bash
 # Update package index
@@ -134,6 +134,14 @@ sudo apt install -y unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
+
+AWS CLI Configuration
+# On Jenkins Server
+aws configure
+AWS Access Key ID: [YOUR_ACCESS_KEY]
+AWS Secret Access Key: [YOUR_SECRET_KEY]
+Default region name: [e.g., us-east-1]
+Default output format: json
 ```
 
 ## Kubectl
@@ -669,12 +677,6 @@ aws --version
    - Content Type: `application/json`
    - Events: Select "Push" and "Pull Request"
 
-### 2.2 Jenkins GitHub Credentials
-1. Manage Jenkins > Manage Credentials
-2. Add GitHub Personal Access Token
-   - Kind: "GitHub Personal Access Token"
-   - Scope: Global
-   - Token: Generate from GitHub Settings > Developer Settings
 
 ## 3. Creating Jenkins Pipeline Job
 
