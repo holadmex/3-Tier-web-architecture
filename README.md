@@ -459,6 +459,264 @@ flask db migrate -m "Recreate migrations"
 flask db upgrade
 ```
 
-These steps will help you properly set up, run, and test your backend application, ensuring it connects correctly to the PostgreSQL database and responds to API requests as expected.
+# DevOps Infrastructure and CI/CD Setup Guide
 
+## Prerequisites
+- AWS Account
+- Terraform
+- Dockers
+- AWS CLI
+- SonarCloud
+- Trivy
+- Jenkins
+
+## 1. Terraform Infrastructure Provisioning
+
+### 1.1 Local Terraform Setup
+```bash
+# Install Terraform on Ubuntu
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install terraform
+
+# Navigate to terraform directory
+cd ./ecs-terraform
+```
+
+### Run the following Terraform Commands
+```bash
+# Initialize Terraform
+terraform init
+
+# Validate configuration
+terraform validate
+
+# Plan infrastructure
+terraform plan
+
+# Apply infrastructure
+terraform apply
+```
+
+# EC2 Setup and Configuration Guide
+
+## 1. EC2 Instance Provisioning
+
+### Instance Recommendations
+- Type: t3.medium (recommended for Jenkins)
+- OS: Ubuntu 22.04 LTS
+- Storage: Minimum 20GB
+- Security Group:
+  - Inbound Rules:
+    - SSH (Port 22): Your IP
+    - HTTP (Port 80)
+    - Jenkins (Port 8080)
+
+## Initial EC2 Setup, SSH Into The Server With The public IP Address
+
+### System Update
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+## Docker
+
+```bash
+# Update package index
+sudo apt update
+
+# Install prerequisites
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+
+# Add Docker GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# Add Docker repository
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+# Install Docker
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
+
+# Add current user to docker group (optional)
+sudo usermod -aG docker $USER
+```
+
+## AWS CLI
+
+```bash
+# Install dependencies
+sudo apt update
+sudo apt install -y unzip
+
+# Download and install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+AWS CLI Configuration
+# On Jenkins Server
+aws configure
+AWS Access Key ID: [YOUR_ACCESS_KEY]
+AWS Secret Access Key: [YOUR_SECRET_KEY]
+Default region name: [e.g., us-east-1]
+Default output format: json
+```
+
+## Sonar-Scanner Installation
+
+```bash
+wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip
+unzip sonar-scanner-cli-4.8.0.2856.zip
+sudo mv sonar-scanner-4.8.0.2856 /opt/sonar-scanner
+export PATH=$PATH:/opt/sonar-scanner/bin
+echo sonar-scanner --version
+```
+
+## Trivy Installation
+```bash
+sudo apt-get install wget gnupg
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy
+```
+
+
+## 2. Jenkins Installation and Configuration
+
+### Jenkins Installation
+```bash
+# Update system
+sudo apt update
+
+# Install Java
+sudo apt install openjdk-17-jre-headless
+
+# Add Jenkins repository
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+sudo apt update
+sudo apt install jenkins
+
+# Start Jenkins service
+sudo systemctl status jenkins
+```
+
+### 2.2 Initial Jenkins Setup
+```bash
+# Retrieve initial admin password
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+
+## Post-Installation Checks
+```bash
+# Verify installations
+java -version
+docker --version
+jenkins --version
+sonar-scanner --version
+trivy --version
+aws --version
+```
+
+## Troubleshooting Tips
+- Check service status: `sudo systemctl status <service-name>`
+- Restart services if needed
+
+### Required Jenkins Plugins
+
+#### Installation Process
+1. Navigate to Jenkins Dashboard
+2. Go to "Manage Jenkins" > "Plugins"
+3. Click "Available Plugins"
+
+#### Essential Plugins List
+- GitHub Integration
+- Pipeline
+- Docker Pipeline
+- AWS Credentials
+- CloudBees Docker
+- Blue Ocean
+- SonarQube Scanner
+- Build Timestamp
+- Pipeline Utility Steps
+
+
+# Jenkins CI/CD Setup Guide
+
+### 1.2 Configuring AWS Credentials in Jenkins
+
+#### Method 1: AWS Credentials Plugin
+1. Go to Jenkins Dashboard
+2. Manage Jenkins > Manage Credentials
+3. Click "System" > "Global credentials"
+4. Click "Add Credentials"
+5. Select "AWS Credentials"
+6. Fill in:
+   - ID: `aws-deployment-credentials`
+   - Access Key ID: `[YOUR_AWS_ACCESS_KEY]`
+   - Secret Access Key: `[YOUR_AWS_SECRET_KEY]`
+
+
+## 2. GitHub Repository Integration
+
+### 2.1 GitHub Webhook Setup
+1. In your GitHub repository:
+   - Settings > Webhooks
+   - Add Webhook
+   - Payload URL: `http://[JENKINS-SERVER-IP]:8080/github-webhook/`
+   - Content Type: `application/json`
+   - Events: Select "Push" and "Pull Request"
+
+### 2.2 Jenkins GitHub Credentials
+1. Manage Jenkins > Manage Credentials
+2. Add GitHub Personal Access Token
+   - Kind: "GitHub Personal Access Token"
+   - Scope: Global
+   - Token: Generate from GitHub Settings > Developer Settings
+
+## 3. Creating Jenkins Pipeline Job
+
+### 3.1 Create New Pipeline Job
+1. Jenkins Dashboard > New Item
+2. Enter Item Name: `[Your-Project-Name]-Pipeline`
+3. Select "Pipeline" project type
+4. Click "OK"
+
+
+3. Pipeline Configuration:
+   - Definition: "Pipeline script from SCM"
+   - SCM: Git
+   - Repository URL: `https://github.com/[USERNAME]/[REPO].git`
+   - Credentials: Select GitHub credentials created earlier
+   - Branch: `*/main` or `*/master`
+   - Script Path: `Jenkinsfile`
+
+
+## 4. Configuring SonarCloud Integration
+
+### 4.1 SonarCloud Project Setup
+1. Login to SonarCloud
+2. Create Organization: `[Your-Organization]`
+3. Create Project: `[Your-Project-Name]`
+4. Generate Project Token
+
+### 4.2 Jenkins SonarQube Configuration
+1. Manage Jenkins > Configure System
+2. Add SonarQube Servers
+   - Name: SonarCloud
+   - Server URL: `https://sonarcloud.io`
+   - Server Authentication Token: Add SonarCloud token
+
+## 5. Troubleshooting
+
+### Common Issues
+- Webhook not triggering
+  - Check GitHub webhook settings
+  - Verify Jenkins URL accessibility
+- Credential issues
+  - Validate AWS and GitHub credentials
+- Build failures
+  - Check console output for specific errors
 
