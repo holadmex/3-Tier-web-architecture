@@ -519,7 +519,7 @@ terraform apply
 sudo apt update && sudo apt upgrade -y
 ```
 
-## Docker
+## Docker Installation
 
 ```bash
 # Update package index
@@ -542,7 +542,7 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io
 sudo usermod -aG docker $USER
 ```
 
-## AWS CLI
+## AWS CLI Installation
 
 ```bash
 # Install dependencies
