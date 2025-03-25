@@ -640,7 +640,7 @@ aws --version
 2. Go to "Manage Jenkins" > "Plugins"
 3. Click "Available Plugins"
 
-#### Essential Plugins List
+#### Essential Plugins Installation List in Jenkins
 - GitHub Integration
 - Pipeline
 - Docker Pipeline
