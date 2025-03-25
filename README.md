@@ -136,7 +136,7 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 AWS CLI Configuration
-# On Jenkins Server
+# On Local Laptop/PC
 aws configure
 AWS Access Key ID: [YOUR_ACCESS_KEY]
 AWS Secret Access Key: [YOUR_SECRET_KEY]
