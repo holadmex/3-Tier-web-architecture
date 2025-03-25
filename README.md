@@ -520,10 +520,11 @@ terraform apply
     - HTTP (Port 80)
     - Jenkins (Port 8080)
 
-## Initial EC2 Setup, SSH Into The Server With The public IP Address
+## Initial EC2 Setup, SSH Into The Server With The Public IP Address
 
 ### System Update
 ```bash
+ssh -i downnloads/key.pem ubuntu@<public-ip>
 sudo apt update && sudo apt upgrade -y
 ```
 
