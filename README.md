@@ -734,23 +734,6 @@ Before configuring the Jenkinsfile, ensure you have:
 - IAM Roles for ECS Task Execution
 - Jenkins Credentials Setup
 
-### 2. Environment Variables Breakdown
-
-#### 2.1 AWS and Deployment Configurations
-```groovy
-environment {
-    // ECR Repository Details
-    ECR_REPO = "429841094792.dkr.ecr.us-east-1.amazonaws.com/your-repository"
-    
-    // ECS Deployment Configurations
-    ECS_TASK_DEFINITION = "task-web-app"
-    ECS_CLUSTER = "Full-stack-web-app"
-    ECS_SERVICE = "web-app-service"
-    AWS_REGION = "us-east-1"
-}
-```
-
-
 # Jenkinsfile Customization Guide for New Users
 
 ## 1. Environment Variables Customization
