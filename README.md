@@ -849,20 +849,6 @@ stage('SonarCloud Analysis') {
 - [ ] Adjust IAM Role ARNs
 - [ ] Modify Repository URLs
 
-## 7. Common Pitfalls to Avoid
-- Using hardcoded credentials
-- Incorrect file paths
-- Mismatched container names
-- Overlooking AWS region settings
-- Not setting up proper Jenkins credentials
-
-## 8. Recommended Approach
-1. Start with small, incremental changes
-2. Test each stage separately
-3. Use Jenkins pipeline syntax validation
-4. Verify credentials and permissions
-5. Run initial builds with verbose logging
-
 
 This guide provides a comprehensive overview of the key areas we would need to modify in the Jenkinsfile, with specific attention to customization points, potential pitfalls, and best practices.======
 
