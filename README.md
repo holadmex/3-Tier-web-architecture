@@ -853,4 +853,133 @@ stage('SonarCloud Analysis') {
 This guide provides a comprehensive overview of the key areas we would need to modify in the Jenkinsfile, with specific attention to customization points, potential pitfalls, and best practices.======
 
 
+# GitHub Actions ECS CI/CD Pipeline
+
+This repository contains a CI/CD pipeline configuration for deploying applications to AWS ECS using GitHub Actions.
+
+## Overview
+
+The CI/CD pipeline automates the following processes:
+- Code quality analysis using SonarCloud
+- Docker image building for the frontend application
+- Security scanning with Trivy
+- Pushing images to Amazon ECR
+- Deploying to AWS ECS (Fargate)
+
+## Pipeline Architecture
+
+
+The pipeline follows this workflow:
+1. Code is pushed to the repository
+2. Static code analysis is performed
+3. Docker image is built and scanned for vulnerabilities
+4. Image is pushed to Amazon ECR
+5. ECS task definition is updated with the new image
+6. ECS service is updated to use the new task definition
+
+## GitHub Actions Workflow
+
+The GitHub Actions workflow (`ecs-ci-cd.yml`) runs on pushes to the main branch and for pull requests:
+
+```yaml
+name: ECS CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+```
+
+### Workflow Jobs
+
+The workflow consists of the following jobs:
+- **sonarcloud**: Performs static code analysis
+- **docker-build**: Builds the Docker image, scans it for vulnerabilities, and pushes it to ECR
+- **deploy-main**: Updates the ECS task definition and service
+
+### Environment Variables
+
+The workflow uses these environment variables:
+- `AWS_REGION`: The AWS region for deployment
+- `ECS_TASK_DEFINITION`: The name of the ECS task definition
+- `ECS_CLUSTER`: The ECS cluster name
+- `ECS_SERVICE`: The ECS service name
+- `SONAR_PROJECT_KEY`: The SonarCloud project key
+- `SONAR_ORG`: The SonarCloud organization
+
+## Getting Started
+
+### Prerequisites
+
+- AWS account with permissions for ECR and ECS
+- GitHub repository
+- Docker installed on build servers
+- SonarCloud account (optional)
+
+### Setup for GitHub Actions
+
+1. Fork or clone this repository
+2. Set up the required secrets in your GitHub repository:
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `ECR_REPO`
+   - `SONAR_TOKEN`
+   - `ECS_TASK_ROLE`
+
+##  GitHub Repository Secrets Configuration
+
+### Adding AWS Credentials to GitHub Secrets
+1. Go to your GitHub repository
+2. Navigate to Settings > Secrets and Variables > Actions
+3. Click "New repository secret"
+
+#### Create Secrets:
+1. Secret:
+   - Name: `AWS_ACCESS_KEY_ID`
+   - Value: `[Your AWS Access Key]`
+
+2. Secret:
+   - Name: `AWS_SECRET_ACCESS_KEY`
+   - Value: `[Your AWS Secret Access Key]`
+
+3. Secret:
+   - Name: `ECR_REPO`
+   - Value: `[Your AWS ECR Value]`
+
+4. Secret:
+   - Name: `SONAR_TOKEN`
+   - Value: `[Your Generated SONAR TOKEN]`
+
+5. Secret:
+   - Name: `ECS_TASK_ROLE`
+   - Value: `[Your AWS ECS TASK ROLE ARN]`
+
+
+NB: Customize the environment variables in the workflow file if needed, and also push to the main branch to trigger the workflow
+
+
+## Security Considerations
+
+The pipeline includes security best practices:
+- Vulnerability scanning with Trivy
+- Code quality analysis with SonarCloud
+- Least privilege IAM permissions
+- Secret management through GitHub Actions
+
+## Troubleshooting
+
+Common issues and solutions:
+
+| Issue | Solution |
+|-------|----------|
+| Docker build fails | Check the Dockerfile and build context |
+| Trivy reports vulnerabilities | Update base images or dependencies to fix security issues |
+| Deployment fails | Verify AWS credentials and permissions |
+| Service doesn't update | Check ECS task definition and service configuration |
+| SonarCloud analysis fails | Verify SONAR_TOKEN and repository configuration |
+
 
