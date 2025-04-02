@@ -1062,9 +1062,110 @@ This directory will be mounted as a persistent volume for the database.
 Due to the specific PostgreSQL setup with custom passwords, you'll need to build your own Docker images:
 
 
-===
-===
-===
+# Docker Compose for Building and Pushing Images
+
+This section covers how to use Docker Compose to build your application images and push them to Docker Hub for use in your Kubernetes deployment.
+
+### 2. Build Images Using Docker Compose
+
+Build all the images at once:
+
+```bash
+docker compose build
+
+OR 
+
+docker compose up -d
+```
+
+## Push Images to Docker Hub
+
+### 1. Login to Docker Hub
+
+Before pushing your images, login to Docker Hub:
+
+```bash
+docker login
+```
+
+Enter your Docker Hub username and password when prompted.
+
+### 2. Tag and Push Images
+
+After successful login, tag and push your images to Docker Hub:
+
+#### Frontend Image
+
+```bash
+docker tag 3-tier-web-architecture-frontend:latest holadmex/3-tier-web-architecture-frontend:latest
+docker push holadmex/3-tier-web-architecture-frontend:latest
+```
+
+#### Backend Image
+
+```bash
+docker tag 3-tier-web-architecture-backend:latest holadmex/3-tier-web-architecture-backend:latest
+docker push holadmex/3-tier-web-architecture-backend:latest
+```
+
+#### Database Image
+
+```bash
+docker tag 3-tier-web-architecture-database:latest holadmex/3-tier-web-architecture-database:latest
+docker push holadmex/3-tier-web-architecture-database:latest
+```
+
+## Update Kubernetes Manifest Files
+
+After pushing your images to Docker Hub, update your Kubernetes manifest files to reference these images:
+
+### Update `frontend-deployment.yaml`
+
+```yaml
+spec:
+  containers:
+  - name: frontend
+    image: holadmex/3-tier-web-architecture-frontend:latest
+```
+
+### Update `backend-deployment.yaml`
+
+```yaml
+spec:
+  containers:
+  - name: backend
+    image: holadmex/3-tier-web-architecture-backend:latest
+```
+
+### Update `database-deployment.yaml`
+
+```yaml
+spec:
+  containers:
+  - name: database
+    image: holadmex/3-tier-web-architecture-database:latest
+```
+
+## Testing with Docker Compose Before Kubernetes Deployment
+
+You can test your entire application stack locally using Docker Compose before deploying to Kubernetes:
+
+```bash
+# Start the entire stack
+docker-compose up -d
+
+# Check if all services are running
+docker-compose ps
+
+# Check logs
+docker-compose logs -f
+
+# Test the application
+curl http://localhost:3000
+
+# Shut down the stack
+docker-compose down
+```
 
 
 ### 3. Update Image References in Manifest Files
