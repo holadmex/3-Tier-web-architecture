@@ -983,3 +983,344 @@ Common issues and solutions:
 | SonarCloud analysis fails | Verify SONAR_TOKEN and repository configuration |
 
 
+# Kubernetes Application Deployment with Minikube
+
+This guide covers the setup and dev deployment of a three-tier application (frontend, backend, database) using Kubernetes with Minikube on a Linux system. This is an intermediate-level guide that assumes prior knowledge of Kubernetes concepts.
+
+## Prerequisites
+
+- Linux operating system
+- Docker Engine or Docker Desktop installed
+- Minikube installed
+- kubectl installed
+- Git to clone this repository
+- Understanding of Kubernetes concepts (Pods, Services, Deployments, PVs, PVCs)
+
+## Setup Environment
+
+### 1. Verify Docker Installation
+
+```bash
+docker --version
+docker ps
+```
+
+Ensure Docker is running properly before proceeding.
+
+### 2. Install Minikube (if not already installed on linux)
+
+```bash
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+```
+
+### 3. Start Minikube
+
+```bash
+minikube start --driver=docker
+
+minikube start --cpus=4 --memory=8192 (This can be configured depending on your use cases.)
+
+```
+
+### 4. Verify Installation
+
+```bash
+minikube status
+kubectl get nodes
+```
+
+## Project Structure
+
+The project contains the following Kubernetes manifest files:
+
+- `namespace.yaml` - Defines the namespace for our application
+- `configmap.yaml` - Contains configuration for our application
+- `database-storage.yaml` - PV and PVC for database persistence
+- `database-deployment.yaml` - PostgreSQL database deployment
+- `database-service.yaml` - Service for the database
+- `backend-deployment.yaml` - Backend application deployment
+- `backend-service.yaml` - Service for the backend
+- `frontend-deployment.yaml` - Frontend application deployment
+- `frontend-service.yaml` - Service for the frontend (will need modification)
+- `frontend-autoscaler.yaml` - HPA for frontend scaling
+
+## Pre-Deployment Steps
+
+### 1. Create Local Storage Directory
+
+Before deploying, create a directory on your host machine for database persistence:
+
+```bash
+mkdir -p ~/mnt/data/db
+```
+
+This directory will be mounted as a persistent volume for the database.
+
+### 2. Build and Push Custom Docker Images
+
+Due to the specific PostgreSQL setup with custom passwords, you'll need to build your own Docker images:
+
+
+===
+===
+===
+
+
+### 3. Update Image References in Manifest Files
+
+Update the image references in your deployment files to point to your custom images:
+
+- `database-deployment.yaml`: Update `image: yourusername/postgres-custom:latest`
+- `backend-deployment.yaml`: Update `image: yourusername/backend:latest`
+- `frontend-deployment.yaml`: Update `image: yourusername/frontend:latest`
+
+### 4. Modify Frontend Service Type
+
+For Minikube, change the service type in `frontend-service.yaml` from LoadBalancer to NodePort:
+
+```yaml
+# Original
+spec:
+  type: LoadBalancer
+  
+# Modified for Minikube
+spec:
+  type: NodePort
+```
+
+## Deployment Steps
+
+### 1. Create Namespace
+
+```bash
+kubectl apply -f namespace.yaml
+```
+
+### 2. Apply ConfigMap
+
+```bash
+kubectl apply -f configmap.yaml
+```
+
+### 3. Set Up Database Storage
+
+```bash
+kubectl apply -f database-storage.yaml
+```
+
+### 4. Deploy Database
+
+Before deploying, make sure to check the PVC configuration in `database-deployment.yaml`. If you encounter issues with PVC being already in use, you'll need to modify the volume configuration as explained in the Troubleshooting section.
+
+```bash
+kubectl apply -f database-deployment.yaml
+kubectl apply -f database-service.yaml
+```
+
+### 5. Deploy Backend
+
+```bash
+kubectl apply -f backend-deployment.yaml
+kubectl apply -f backend-service.yaml
+```
+
+### 6. Deploy Frontend
+
+```bash
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f frontend-service.yaml
+kubectl apply -f frontend-autoscaler.yaml
+```
+
+## However, whole of the manifest deployment can be done once, make sure you are in the k8s-manifest before doing this.
+
+```bash
+kubectl create -f .
+```
+
+## Troubleshooting
+
+### PVC Already in Use Error
+
+If you encounter an error indicating that the PVC is already in use, you need to modify the volume configuration in `database-deployment.yaml`:
+
+**Original configuration:**
+```yaml
+volumes:
+  - name: db-storage
+    persistentVolumeClaim:
+      claimName: db-pvc
+```
+
+**Modified configuration:**
+```yaml
+volumes:
+  - name: db-storage
+    emptyDir: {}
+```
+
+This change uses an `emptyDir` volume instead of a PVC. Note that `emptyDir` is ephemeral and data will be lost when the pod is deleted.
+
+### Database Pod Not Starting
+
+If the database pod is not starting, check the logs:
+
+```bash
+kubectl get pods -n <your-namespace>
+kubectl logs <database-pod-name> -n <your-namespace>
+```
+
+Common issues include:
+- Incorrect PostgreSQL password configuration
+- PV/PVC mounting issues
+- Insufficient resources
+
+### Backend Pod Not Starting
+
+Backend pods may fail to start if they can't connect to the database:
+
+```bash
+kubectl logs <backend-pod-name> -n <your-namespace>
+```
+
+Ensure that the database is running and accessible:
+
+```bash
+kubectl get svc -n <your-namespace>
+```
+
+### Checking Pod Dependencies
+
+Verify that your backend waits for the database to be ready:
+
+```bash
+kubectl describe pod <backend-pod-name> -n <your-namespace>
+```
+
+Look for init containers or readiness probes that might be failing.
+
+### Pod Status Debugging
+
+```bash
+kubectl get pods -n <your-namespace>
+kubectl describe pod <pod-name> -n <your-namespace>
+kubectl logs <pod-name> -n <your-namespace>
+```
+
+## Accessing the Application
+
+### Access Frontend Web Page
+
+After deployment, you can access the frontend using Minikube's service command:
+
+```bash
+minikube service frontend-service -n <your-namespace>
+```
+
+This will automatically open your browser with the correct URL and port.
+
+Alternatively, get the URL and port manually:
+
+```bash
+minikube service frontend-service -n <your-namespace> --url
+```
+
+### Port Forwarding (Alternative Method)
+
+You can also use port forwarding to access the services:
+
+```bash
+# For frontend
+kubectl port-forward svc/frontend-service 8080:80 -n <your-namespace>
+
+# For backend API
+kubectl port-forward svc/backend-service 3000:3000 -n <your-namespace>
+```
+
+Then access the frontend at `http://localhost:8080` and the backend at `http://localhost:3000`.
+
+## Advanced Debugging
+
+
+### Check Resource Usage
+
+```bash
+kubectl top nodes
+kubectl top pods -n <your-namespace>
+```
+
+### Check Logs for All Containers
+
+```bash
+kubectl logs -f deployment/frontend -n <your-namespace>
+kubectl logs -f deployment/backend -n <your-namespace>
+kubectl logs -f deployment/database -n <your-namespace>
+```
+
+## Clean Up
+
+When you're done with the application, clean up the resources:
+
+```bash
+kubectl delete -f frontend-autoscaler.yaml
+kubectl delete -f frontend-service.yaml
+kubectl delete -f frontend-deployment.yaml
+kubectl delete -f backend-service.yaml
+kubectl delete -f backend-deployment.yaml
+kubectl delete -f database-service.yaml
+kubectl delete -f database-deployment.yaml
+kubectl delete -f database-storage.yaml
+kubectl delete -f configmap.yaml
+kubectl delete -f namespace.yaml
+
+OR
+
+kubectl delete all -f .
+
+# Stop Minikube
+minikube stop
+
+# Optional: Delete the Minikube cluster
+minikube delete
+```
+
+## Detailed Explanation of Manifest Files
+
+### namespace.yaml
+Creates a dedicated namespace for our application, ensuring resource isolation.
+
+### configmap.yaml
+Contains configuration data like database connection strings, environment variables, and application settings.
+
+### database-storage.yaml
+Defines the PersistentVolume (PV) and PersistentVolumeClaim (PVC) for database storage.
+
+### database-deployment.yaml
+Deploys the PostgreSQL database with proper configuration and volume mounting.
+
+### database-service.yaml
+Creates a ClusterIP service for internal database access.
+
+### backend-deployment.yaml
+Deploys the backend application, which depends on the database.
+
+### backend-service.yaml
+Creates a service for the backend API.
+
+### frontend-deployment.yaml
+Deploys the frontend application, typically a web UI.
+
+### frontend-service.yaml
+Creates a NodePort service (modified from LoadBalancer) for accessing the frontend.
+
+### frontend-autoscaler.yaml
+Horizontal Pod Autoscaler for scaling the frontend based on resource usage.
+
+## Best Practices
+
+1. Always ensure your database is properly backed up, especially when using emptyDir
+2. Use resource limits and requests to ensure proper scheduling
+3. Implement health checks for all pods
+4. Use ConfigMaps and Secrets for configuration rather than hardcoding values
+5. Always test changes in a development environment before applying to production
