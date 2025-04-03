@@ -41,6 +41,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: your-frontend-image:${GITHUB_SHA::3}
+          args: --policy-path=./.snyk
       
       - name: Run Snyk to check Python dependencies for vulnerabilities
         uses: snyk/actions/python@master

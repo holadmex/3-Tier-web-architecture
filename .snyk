@@ -1,14 +1,11 @@
 version: v1.25.0
 
 ignore:
-  SNYK-ALPINE321-LIBXML2-9380738:
-    - '*':
-        reason: 'No patch available, not exploitable in our environment'
-        expires: 2025-06-01T00:00:00.000Z
-  
-  SNYK-ALPINE321-EXPAT-9459843:
-    - '*':
+  # Expat vulnerability
+  'SNYK-ALPINE321-EXPAT-9459843':
+    - 'docker-image|your-frontend-image > expat/libexpat@2.6.4-r0':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
-
-patch: {}
+    - 'docker-image|your-frontend-image > fontconfig/fontconfig@2.15.0-r1 > expat/libexpat@2.6.4-r0':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
