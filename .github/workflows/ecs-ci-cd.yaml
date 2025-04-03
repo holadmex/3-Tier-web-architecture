@@ -41,7 +41,6 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: your-frontend-image:${{ github.sha }}
-          args: --file=Dockerfile
       
       - name: Run Snyk to check Python dependencies for vulnerabilities
         uses: snyk/actions/python@master
