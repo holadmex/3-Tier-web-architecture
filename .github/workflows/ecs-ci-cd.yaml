@@ -40,21 +40,17 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: your-frontend-image:${GITHUB_SHA::3}
-          args: test --policy-path=/github/workspace/.snyk
+          image: your-frontend-image:${{ github.sha }}
+          args: --file=Dockerfile
       
-      - name: Run Snyk to check for vulnerabilities
+      - name: Run Snyk to check Python dependencies for vulnerabilities
         uses: snyk/actions/python@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: test backend/ --skip-unresolved
+          command: test
+          args: backend/ --skip-unresolved
         continue-on-error: true
-
-      - name: Force Exit If Stuck
-        run: exit 0
-          
-
       
 
 
