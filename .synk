@@ -1,0 +1,8 @@
+ignore:
+  SNYK-ALPINE321-LIBXSLT-9407516: # CVE-2024-55549
+    - reason: "False positive or non-exploitable in our use case."
+      expires: "2025-12-31"
+
+  SNYK-ALPINE321-LIBXML2-9380738: # CVE-2025-27113
+    - reason: "Waiting for package update."
+      expires: "2025-06-30"
