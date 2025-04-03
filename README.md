@@ -815,6 +815,23 @@ stage('SonarCloud Analysis') {
 }
 ```
 
+## Accessing Your ECS Load Balancer
+
+After deploying your frontend application on Amazon ECS, the AWS load balancer provides the primary access point to your application.
+
+### Finding Your Load Balancer URL
+
+```bash
+Open the AWS Management Console
+Navigate to EC2 > Load Balancers
+Select your load balancer from the list
+Copy the DNS name from the "Description" tab 
+(looks like: your-lb-name-123456789.region.elb.amazonaws.com)
+```
+
+### Verifying Your Application
+Access your application by entering the load balancer DNS name in your browser. Your frontend should now be accessible through this URL.
+
 ## 6. Critical Customization Checklist
 
 ### Must-Check Items
@@ -938,6 +955,22 @@ The workflow uses these environment variables:
 
 NB: Customize the environment variables in the workflow file if needed, and also push to the main branch to trigger the workflow
 
+## Accessing Your ECS Load Balancer
+
+After deploying your frontend application on Amazon ECS, the AWS load balancer provides the primary access point to your application.
+
+### Finding Your Load Balancer URL
+
+```bash
+Open the AWS Management Console
+Navigate to EC2 > Load Balancers
+Select your load balancer from the list
+Copy the DNS name from the "Description" tab 
+(looks like: your-lb-name-123456789.region.elb.amazonaws.com)
+```
+
+### Verifying Your Application
+Access your application by entering the load balancer DNS name in your browser. Your frontend should now be accessible through this URL.
 
 ## Security Considerations
 
@@ -1551,7 +1584,7 @@ You should see an external IP assigned to your frontend service, which will be t
 
 ## Accessing Your ECS Load Balancer
 
-After deploying your frontend application on Amazon ECS, the AWS load balancer provides the primary access point to your application.
+After deploying your frontend application on Amazon EC2 Kops Instance, the AWS load balancer provides the primary access point to your application.
 
 ### Finding Your Load Balancer URL
 
