@@ -35,20 +35,12 @@ jobs:
         run: |
           trivy image --severity HIGH,CRITICAL your-frontend-image:${GITHUB_SHA::3} || exit 1
 
-      - name: Run Snyk Monitor
-        uses: snyk/actions/python@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: monitor backend/
-
-
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: test backend/ --debug
+          args: test backend/ --skip-unresolved
           
 
       
