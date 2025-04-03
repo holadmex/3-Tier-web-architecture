@@ -35,6 +35,13 @@ jobs:
         run: |
           trivy image --severity HIGH,CRITICAL your-frontend-image:${GITHUB_SHA::3} || exit 1
 
+      - name: Run Snyk to check Docker image for vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: your-frontend-image:${GITHUB_SHA::3}
+      
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
         env:
