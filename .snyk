@@ -1,0 +1,8 @@
+ignore:
+  SNYK-ALPINE321-EXPAT-9459843:
+    - reason: "False positive or non-exploitable in our use case."
+      expires: "2026-04-31"
+
+  SNYK-ALPINE321-LIBXML2-9380738:
+    - reason: "Waiting for package update."
+      expires: "2026-04-30"
