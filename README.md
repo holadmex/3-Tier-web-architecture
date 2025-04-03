@@ -144,29 +144,6 @@ Default region name: [e.g., us-east-1]
 Default output format: json
 ```
 
-## Kubectl
-
-```bash
-# Download and install kubectl
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-ls - (./kubectl)
-chmod +x ./kubectl
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-kubectl version --client
-sudo mv kubectl /usr/local/bin/
-kubectl --help 
-```
-
-## Kops
-
-```bash
-# Download and install kops
-wget https://github.com/kubernetes/kops/releases/download/v1.26.4/kops-linux-amd64
-ls - (kops.linux.amd64)
-chmod +x kops-linux-amd64
-sudo mv kops-linux-amd64 /usr/local/bin/kops
-kops --help
-```
 ## Tools & Cloud Provider Services Covered in These Project are as follows:
 
 - Python
@@ -1234,7 +1211,7 @@ kubectl apply -f frontend-service.yaml
 kubectl apply -f frontend-autoscaler.yaml
 ```
 
-## However, whole of the manifest deployment can be done once, make sure you are in the k8s-manifest before doing this.
+## To deploy the whole Kubernetes manifest file all at once.
 
 ```bash
 kubectl create -f .
@@ -1425,3 +1402,148 @@ Horizontal Pod Autoscaler for scaling the frontend based on resource usage.
 3. Implement health checks for all pods
 4. Use ConfigMaps and Secrets for configuration rather than hardcoding values
 5. Always test changes in a development environment before applying to production
+
+
+# Advanced Kubernetes Deployment with Kops and ELK Stack Monitoring
+
+This section expands on our guide to cover production-level Kubernetes cluster setup using kops on AWS EC2 instances, deploying our application with proper LoadBalancer configuration, and implementing ELK stack monitoring using Ansible.
+
+## Production Deployment with kops on AWS
+
+### Prerequisites
+
+- AWS account with proper IAM permissions
+- EC2 instance to run kops commands
+- AWS CLI configured with appropriate credentials
+- Domain name (for kops DNS configuration)
+- SSH key pair for node access
+
+### Setting Up kops on EC2
+
+1. Launch an EC2 instance (recommended t3.medium or larger)
+
+2. Install kops, kubectl, and AWS CLI:
+
+## AWS CLI
+
+```bash
+# Install dependencies
+sudo apt update
+sudo apt install -y unzip
+
+# Download and install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+AWS CLI Configuration
+# On Local Laptop/PC
+aws configure
+AWS Access Key ID: [YOUR_ACCESS_KEY]
+AWS Secret Access Key: [YOUR_SECRET_KEY]
+Default region name: [e.g., us-east-1]
+Default output format: json
+```
+
+## Kubectl
+
+```bash
+# Download and install kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+ls - (./kubectl)
+chmod +x ./kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+sudo mv kubectl /usr/local/bin/
+kubectl --help 
+```
+
+## Kops
+
+```bash
+# Download and install kops
+wget https://github.com/kubernetes/kops/releases/download/v1.26.4/kops-linux-amd64
+ls - (kops.linux.amd64)
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+kops --help
+```
+
+4. Create an S3 bucket for kops state store in your AWS account <kops-test-1>:
+
+### Creating a Production Kubernetes Cluster
+
+1. Create the cluster configuration on the kops Ec2 instance:
+
+```bash
+kops create cluster --name=dev.holadmexbobpro.online \
+  --state=s3://kops-test-1 \
+  --zones=us-east-1a,us-east-1b \
+  --node-count=4 --node-size=t2.medium --master-size=t2.medium \
+  --dns-zone=dev.holadmexbobpro.online \
+  --node-volume-size=12 --master-volume-size=16 \
+  --ssh-public-key ~/.ssh/id_ed25519.pub
+```
+
+
+2. Update the cluster after creation:
+
+```bash
+kops update cluster --name=dev.holadmexbobpro.online --state=s3://kops-test-1 --yes --admin
+```
+
+3. Validate the cluster:
+
+```bash
+kops validate cluster --state=s3://kops-test-1 --wait 10m
+```
+
+## Deploying Application with LoadBalancer on Production Cluster
+
+1. Navigate to your manifest directory:
+
+```bash
+cd k8s-manifest
+```
+
+2. Apply the namespace config:
+
+```bash
+kubectl apply -f namespace.yaml
+```
+
+3. Apply the rest of your manifests, making sure to use the LoadBalancer type for frontend:
+
+```bash
+# Make sure frontend-service.yaml has LoadBalancer type
+cat frontend-service.yaml
+
+# It should have:
+spec:
+  type: LoadBalancer
+
+# Apply all configs
+kubectl apply -f configmap.yaml
+kubectl apply -f database-storage.yaml
+kubectl apply -f database-deployment.yaml
+kubectl apply -f database-service.yaml
+kubectl apply -f backend-deployment.yaml
+kubectl apply -f backend-service.yaml
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f frontend-service.yaml
+kubectl apply -f frontend-autoscaler.yaml
+```
+
+## To deploy the whole Kubernetes manifest file all at once.
+
+```bash
+kubectl create -f .
+```
+
+4. Check that the AWS LoadBalancer is provisioned:
+
+```bash
+kubectl get svc -n <your-namespace>
+```
+
+You should see an external IP assigned to your frontend service, which will be the AWS ELB endpoint.
