@@ -1547,3 +1547,21 @@ kubectl get svc -n <your-namespace>
 ```
 
 You should see an external IP assigned to your frontend service, which will be the AWS ELB endpoint.
+
+
+## Accessing Your ECS Load Balancer
+
+After deploying your frontend application on Amazon ECS, the AWS load balancer provides the primary access point to your application.
+
+### Finding Your Load Balancer URL
+
+```bash
+Open the AWS Management Console
+Navigate to EC2 > Load Balancers
+Select your load balancer from the list
+Copy the DNS name from the "Description" tab 
+(looks like: your-lb-name-123456789.region.elb.amazonaws.com)
+```
+
+### Verifying Your Application
+Access your application by entering the load balancer DNS name in your browser. Your frontend should now be accessible through this URL.
