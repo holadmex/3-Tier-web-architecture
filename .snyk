@@ -1,16 +1,18 @@
 version: v1.25.0
 
 ignore:
-  'SNYK-ALPINE321-EXPAT-9459843':
-    - 'docker-image|your-frontend-image > expat/libexpat@2.6.4-r0':
+  'SNYK-ALPINE321-LIBXSLT-9407516':
+    - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
-    - 'docker-image|your-frontend-image > fontconfig/fontconfig@2.15.0-r1 > expat/libexpat@2.6.4-r0':
+
+  'SNYK-ALPINE321-LIBXSLT-9407517':
+    - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
-  
-  'SNYK-ALPINE321-LIBXML2-9380738':
-    - 'docker-image|your-frontend-image > libxml2/libxml2@2.11.4-r0':
+
+  'SNYK-ALPINE321-LIBXML2-9360831':
+    - 'docker-image|your-frontend-image > libxml2/libxml2@2.13.4-r3':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
 
@@ -19,7 +21,7 @@ ignore:
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
 
-  'SNYK-ALPINE321-LIBXML2-9360831':
+  'SNYK-ALPINE321-LIBXML2-9380738':
     - 'docker-image|your-frontend-image > libxml2/libxml2@2.13.4-r3':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
