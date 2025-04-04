@@ -5,9 +5,15 @@ ignore:
     - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-xslt/nginx-module-xslt@1.27.4-r1 > libxslt/libxslt@1.1.42-r1':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
 
   'SNYK-ALPINE321-LIBXSLT-9407517':
     - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-xslt/nginx-module-xslt@1.27.4-r1 > libxslt/libxslt@1.1.42-r1':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
 
@@ -15,14 +21,41 @@ ignore:
     - 'docker-image|your-frontend-image > libxml2/libxml2@2.13.4-r3':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-njs/nginx-module-njs@1.27.4.0.8.9-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-xslt/nginx-module-xslt@1.27.4-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
 
   'SNYK-ALPINE321-LIBXML2-9360925':
     - 'docker-image|your-frontend-image > libxml2/libxml2@2.13.4-r3':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-njs/nginx-module-njs@1.27.4.0.8.9-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-xslt/nginx-module-xslt@1.27.4-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
 
   'SNYK-ALPINE321-LIBXML2-9380738':
     - 'docker-image|your-frontend-image > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > libxslt/libxslt@1.1.42-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-njs/nginx-module-njs@1.27.4.0.8.9-r1 > libxml2/libxml2@2.13.4-r3':
+        reason: 'Risk accepted, compensating controls in place'
+        expires: 2025-06-01T00:00:00.000Z
+    - 'docker-image|your-frontend-image > nginx-module-xslt/nginx-module-xslt@1.27.4-r1 > libxml2/libxml2@2.13.4-r3':
         reason: 'Risk accepted, compensating controls in place'
         expires: 2025-06-01T00:00:00.000Z
 

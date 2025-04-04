@@ -1598,3 +1598,172 @@ Copy the DNS name from the "Description" tab
 
 ### Verifying Your Application
 Access your application by entering the load balancer DNS name in your browser. Your frontend should now be accessible through this URL.
+
+
+# Setting Up ELK Stack Monitoring with Ansible
+
+## Overview
+This repository contains the necessary configurations to deploy an ELK (Elasticsearch, Logstash, Kibana) stack on Kubernetes using Ansible for automated provisioning.
+
+## Prerequisites
+- Ansible installed on your local machine
+- Access to Kubernetes cluster
+- SSH access to your master node
+
+## Installation
+
+### 1. Install Required Dependencies
+```bash
+sudo apt install ansible
+sudo apt update
+sudo apt install python3-pip
+```
+
+### 2. Configure Ansible Environment
+Navigate to the Ansible directory structure:
+```bash
+cd ansible
+ls -la  # Review directory structure containing inventory, playbooks, and roles
+```
+
+### 3. Prepare Kubernetes Environment
+For testing purposes only, remove the control-plane taint from the master node:
+```bash
+kubectl taint nodes i-07914313fc69a09b7 node-role.kubernetes.io/control-plane:NoSchedule-
+```
+**Note:** This is not recommended for production environments.
+
+### 4. Update Ansible Inventory
+```bash
+cd inventory
+vi inventory
+```
+
+Configure your inventory with appropriate host details:
+```yaml
+all:
+  hosts:
+    k8s-master:
+      ansible_host: 50.19.156.2  # Replace with your EC2 instance IP
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_env:
+        KUBECONFIG: ~/.kube/config
+```
+
+## Deployment
+
+### 1. Execute Ansible Playbook
+```bash
+cd ..  # Return to ansible directory
+ansible-playbook -i inventory/inventory.yaml playbooks/stack-installation.yaml
+```
+
+### 2. Verify Deployment
+Confirm that all ELK stack components are running:
+```bash
+kubectl get pods -n monitoring
+kubectl get pods -n logging
+```
+
+## Accessing Web Interfaces
+
+### Kibana
+Check Kibana service details:
+```bash
+kubectl get svc kibana -n monitoring
+kubectl get svc kibana -n logging
+```
+
+### Authentication Details
+
+#### Grafana
+- Default username: `admin`
+- Retrieve password:
+  ```bash
+  kubectl get secret grafana -n monitoring -o yaml
+  echo "dUZ2YlhMZjA1ZVUyZkFYUQ==" | base64 --decode
+  ```
+
+#### Kibana
+- Default username: `elastic`
+- Retrieve password:
+  ```bash
+  kubectl get secrets -n logging
+  kubectl get secret elasticsearch-master-credentials -n logging -o jsonpath="{.data}" | jq
+  kubectl get secret <elasticsearch-secret-name> -n logging -o jsonpath="{.data.elastic}" | base64 --decode
+  ```
+
+# Network Configuration for ELK Stack Components
+
+## Step 1: Identify Required Ports
+
+First, determine the NodePort values assigned to each service:
+
+```bash
+# List all services with their assigned ports
+kubectl get svc -n monitoring
+kubectl get svc -n logging
+```
+
+Example output:
+```
+NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+grafana                   NodePort    10.100.200.15    <none>        3000:30300/TCP   1h
+prometheus-server         NodePort    10.100.200.20    <none>        9090:30900/TCP   1h
+kibana                    NodePort    10.100.200.25    <none>        5601:30601/TCP   1h
+elasticsearch             NodePort    10.100.200.30    <none>        9200:30920/TCP   1h
+```
+
+Note the NodePort values (e.g., 30300, 30900, 30601, 30920).
+
+
+### Using AWS Console
+
+1. Open the AWS Management Console
+2. Navigate to EC2 > Security Groups
+3. Select the security group identified in Step 2
+4. Click "Edit inbound rules"
+5. Add rules for each service:
+   - Type: Custom TCP
+   - Port range: [NodePort value]
+   - Source: Anywhere-IPv4 (0.0.0.0/0) or your specific IP range
+   - Description: Service name (e.g., "Grafana NodePort")
+
+6. Click "Save rules"
+
+
+Once you've configured the security group rules to allow traffic to the NodePorts, you can access each component of the ELK stack using the master node's public IP address.
+
+
+## Step 1: Access Each Component
+
+### Grafana
+```
+http://<MASTER_NODE_EC2_PUBLIC_IP>:30300
+```
+
+### Prometheus
+```
+http://<MASTER_NODE_EC2_PUBLIC_IP>:30900
+```
+
+### Kibana
+```
+http://<MASTER_NODE_EC2_PUBLIC_IP>:30601
+```
+
+
+## Comparison: Minikube vs. kops Production Deployment
+
+| Feature | Minikube | kops Production |
+|---------|----------|----------------|
+| Purpose | Development/Testing | Production-ready |
+| Node Management | Single node | Multi-node, HA |
+| Load Balancer | NodePort + manual access | AWS ELB integration |
+| Storage | Local disk/hostPath | AWS EBS, EFS |
+| Scalability | Limited | Auto-scaling supported |
+| Monitoring | Manual setup | Ansible + ELK integration |
+| Cost | Free (local resources) | AWS infrastructure costs |
+| Security | Basic | IAM integration, network policies |
