@@ -157,6 +157,7 @@ Default output format: json
 - GitHub Actions
 - SonarQube
 - Trivy
+- Snyk
 - Ansible
 - Terraform
 - Kubernetes
