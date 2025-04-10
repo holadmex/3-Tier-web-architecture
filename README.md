@@ -376,6 +376,15 @@ docker build -t frontend .
 
 # Run the frontend container
 docker run -d --name web -p 80:80 frontend
+
+# Check built images
+docker images
+
+# Check running containers
+docker ps 
+
+# Check all running containers
+docker ps -a
 ```
 
 ```bash
@@ -386,6 +395,15 @@ docker build -t backend .
 
 # Run the backend container
 docker run -d --name web -p 5000:5000 backend
+
+# Check built images
+docker images
+
+# Check running containers
+docker ps 
+
+# Check all running containers
+docker ps -a
 ```
 
 ## Integration of Docker Compose for our Full-Stack Application Deployment
