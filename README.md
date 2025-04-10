@@ -980,10 +980,14 @@ The workflow uses these environment variables:
 5. Secret:
    - Name: `ECS_TASK_ROLE`
    - Value: `[Your AWS ECS TASK ROLE ARN]`
-   
+
 ![alt text](<Screenshot 2025-04-10 204337.png>)
 
 NB: Customize the environment variables in the workflow file if needed, and also push to the main branch to trigger the workflow
+
+## ON Successful Deployment To ECS via GitHub 
+
+![alt text](<Screenshot 2025-04-10 205213.png>)
 
 ## Accessing Your ECS Load Balancer
 
