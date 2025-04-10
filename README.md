@@ -360,6 +360,9 @@ psql -U ecommerce -d ecommerce_db
 
 # Data Query in our PostgreSQL Database
 SELECT * FROM "user";
+
+c:\Users\hp\Pictures\Screenshots\Screenshot 2025-04-10 201458.png
+
 SELECT * FROM "user" WHERE email = 'test@example.com';
 ```
 
