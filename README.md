@@ -840,9 +840,13 @@ stage('SonarCloud Analysis') {
     }
 }
 ```
-## On Successful Deployment Of Jenkins Pipeline Script
+## ON Successful Deployment Of Jenkins Pipeline Script
 
 ![alt text](ECS-DEPLOYMENT.png)
+
+## SonarCloud Analysis Result
+
+![alt text](<Screenshot 2025-04-10 205608.png>)
 
 ## Accessing Your ECS Load Balancer
 
@@ -992,6 +996,10 @@ NB: Customize the environment variables in the workflow file if needed, and also
 ## ON Successful Deployment To ECS via GitHub 
 
 ![alt text](<Screenshot 2025-04-10 205213.png>)
+
+## SonarCloud Analysis Result
+
+![alt text](<Screenshot 2025-04-10 205608.png>)
 
 ## Accessing Your ECS Load Balancer
 
