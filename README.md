@@ -295,6 +295,7 @@ Open your web browser and navigate to the frontend application:
 
 If using Python's http.server: `http://localhost:8000`
 
+![alt text](<Screenshot 2025-02-21 201045.png>)
 
 ### Step 4: Backend Setup and Configuration
 
