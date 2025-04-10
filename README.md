@@ -840,6 +840,9 @@ stage('SonarCloud Analysis') {
     }
 }
 ```
+## On successful deployment of Jenkins pipeline script
+
+![alt text](ECS-DEPLOYMENT.png)
 
 ## Accessing Your ECS Load Balancer
 
