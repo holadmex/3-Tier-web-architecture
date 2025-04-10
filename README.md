@@ -910,11 +910,15 @@ name: ECS CI/CD
 on:
   push:
     branches:
-      - main
+      - dev
+      - stage
+    tags: # Triggers deployment to production on tags
+      - 'v*'
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - main
+      - dev
+      - stage
 ```
 
 ### Workflow Jobs
