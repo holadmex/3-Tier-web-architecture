@@ -363,6 +363,7 @@ SELECT * FROM "user";
 SELECT * FROM "user" WHERE email = 'test@example.com';
 ```
 `SELECT * FROM "user";`
+
 c:\Users\hp\Pictures\Screenshots\Screenshot 2025-04-10 201458.png
 
 ## Docker Containerization of both Frontend and Backend
