@@ -243,6 +243,8 @@ For proper database connectivity, especially in development environments, you'll
    ```
    Modify this file to change all `peer` connection settings, to `md5` allowing your created user to access the database with the registered password.
 
+![alt text](<Screenshot 2025-04-10 200527-1.png>)
+
 2. PostgreSQL Server Configuration:
    ```bash
    sudo nano /etc/postgresql/16/main/postgresql.conf
@@ -260,6 +262,7 @@ sudo systemctl restart postgresql
 # Connect to local database
 psql -U ecommerce -d ecommerce_db
 ```
+![alt text](<Screenshot 2025-04-10 200317.png>)
 
 #### Useful PostgreSQL Commands
 
