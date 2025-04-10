@@ -840,7 +840,7 @@ stage('SonarCloud Analysis') {
     }
 }
 ```
-## On successful deployment of Jenkins pipeline script
+## On Successful Deployment Of Jenkins Pipeline Script
 
 ![alt text](ECS-DEPLOYMENT.png)
 
@@ -859,7 +859,7 @@ Copy the DNS name from the "Description" tab
 ```
 
 ### Verifying Your Application
-Access your application by entering the load balancer DNS name in your browser. Your frontend should now be accessible through this URL.
+Access your application by entering the load balancer DNS name in your browser. Your frontend should now be accessible through the loadbalancer URL.
 
 ## 6. Critical Customization Checklist
 
@@ -980,7 +980,8 @@ The workflow uses these environment variables:
 5. Secret:
    - Name: `ECS_TASK_ROLE`
    - Value: `[Your AWS ECS TASK ROLE ARN]`
-
+   
+![alt text](<Screenshot 2025-04-10 204337.png>)
 
 NB: Customize the environment variables in the workflow file if needed, and also push to the main branch to trigger the workflow
 
