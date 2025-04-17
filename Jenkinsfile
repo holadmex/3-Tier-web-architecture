@@ -85,6 +85,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Install jq') {
+            steps {
+                sh '''
+                if ! command -v jq &> /dev/null; then
+                    echo "Installing jq locally in workspace..."
+                    curl -Lo jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+                    chmod +x jq
+                else
+                    echo "jq is already installed."
+                fi
+                '''
+            }
+        }
+    }
         stage('Update ECS Service') {
             steps {
                 script {
@@ -135,6 +150,6 @@ pipeline {
             cleanWs()
         }
     }
-}
+
 
 
