@@ -1709,6 +1709,8 @@ cd ..  # Return to ansible directory
 ansible-playbook -i inventory/inventory.yaml playbooks/stack-installation.yaml
 ```
 
+![alt text](<Screenshot 2025-01-01 171724.png>)
+
 ### 2. Verify Deployment
 Confirm that all ELK stack components are running:
 ```bash
@@ -1793,6 +1795,8 @@ Once you've configured the security group rules to allow traffic to the NodePort
 http://<MASTER_NODE_EC2_PUBLIC_IP>:30300
 ```
 
+![alt text](<Screenshot 2025-02-18 172125.png>)
+
 ### Prometheus
 ```
 http://<MASTER_NODE_EC2_PUBLIC_IP>:30900
@@ -1802,6 +1806,8 @@ http://<MASTER_NODE_EC2_PUBLIC_IP>:30900
 ```
 http://<MASTER_NODE_EC2_PUBLIC_IP>:30601
 ```
+
+![alt text](<Screenshot 2025-02-19 103416-1.png>)
 
 
 ## Comparison: Minikube vs. kops Production Deployment
