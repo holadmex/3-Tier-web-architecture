@@ -1822,3 +1822,173 @@ http://<MASTER_NODE_EC2_PUBLIC_IP>:30601
 | Monitoring | Manual setup | Ansible + ELK integration |
 | Cost | Free (local resources) | AWS infrastructure costs |
 | Security | Basic | IAM integration, network policies |
+
+
+# EKS CI/CD Pipeline with GitHub Actions
+
+A complete guide to set up a CI/CD pipeline for Amazon EKS using GitHub Actions, Terraform, and Helm.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Infrastructure Setup](#infrastructure-setup)
+- [AWS IAM OIDC Configuration](#aws-iam-oidc-configuration)
+- [Helm Installation](#helm-installation)
+- [Helm Chart Configuration](#helm-chart-configuration)
+- [GitHub Actions Setup](#github-actions-setup)
+- [Deployment Process](#deployment-process)
+
+## Prerequisites
+
+- AWS Account with appropriate IAM permissions
+- GitHub repository for your application code
+- Basic knowledge of Kubernetes, AWS, and CI/CD concepts
+
+## Infrastructure Setup
+
+Before configuring the CI/CD pipeline, you need to provision the EKS infrastructure using Terraform:
+
+1. Navigate to the Terraform directory:
+   ```
+   cd eks-terraform
+   ```
+
+2. Review and modify the following files according to your requirements:
+   - `variables.tf`: Update cluster name, AWS region, node group configurations
+   - `main.tf`: Adjust VPC settings, subnet configurations
+   - `outputs.tf`: Ensure all required outputs are defined
+
+3. Initialize and apply the Terraform configuration:
+   ```
+   terraform init
+   terraform plan
+   terraform apply
+   ```
+
+## AWS IAM OIDC Configuration
+
+Follow these steps to configure AWS IAM OIDC using the AWS Console:
+
+1. **Create an OIDC Provider**:
+   - Navigate to the AWS IAM Console
+   - Select "Identity Providers" from the left sidebar
+   - Click "Add Provider"
+   - Choose "OpenID Connect"
+   - For Provider URL, enter: `https://token.actions.githubusercontent.com`
+   - For Audience, enter: `sts.amazonaws.com`
+   - Click "Add provider"
+
+2. **Create an IAM Role**:
+   - In the IAM Console, navigate to "Roles"
+   - Click "Create role"
+   - Select "Web Identity" as the trusted entity
+   - Choose the OIDC provider you just created
+   - For Audience, select `sts.amazonaws.com`
+   - Add a condition to restrict access to your GitHub repository:
+     - Condition: `StringEquals`
+     - Key: `token.actions.githubusercontent.com:sub`
+     - Value: `repo:YourGitHubUsername/YourRepoName:ref:refs/heads/main`
+   - Attach necessary policies (AmazonEKSClusterPolicy, etc.)
+   - Give your role a name and description
+   - Create the role and note the ARN
+
+3. **Store the Role ARN as a GitHub Secret**:
+   - In your GitHub repository, go to Settings > Secrets and variables > Actions
+   - Add a new secret named `ASSUME_ROLE` with the ARN value of your IAM role
+
+## Helm Installation
+
+Helm is a package manager for Kubernetes that simplifies deployment management:
+
+```bash
+# Download Helm
+cd /tmp/
+wget https://get.helm.sh/helm-v3.14.0-rc.1-linux-amd64.tar.gz
+
+# Extract the archive
+tar xzvf helm-v3.14.0-rc.1-linux-amd64.tar.gz
+
+# Move the binary to a directory in your PATH
+cd linux-amd64/
+sudo mv helm /usr/local/bin/helm
+
+# Verify installation
+helm --help
+```
+
+## Helm Chart Configuration
+
+Create and configure Helm charts for your application:
+
+```bash
+# Navigate to your application directory
+cd frontend
+
+# Create a new Helm chart
+helm create frontend-chart
+
+#Check created Helm chart
+ls
+
+# Create a dedicated helm directory
+mkdir helm
+mv frontend-chart helm/
+
+# Remove default templates
+rm -rf helm/frontend-chart/templates/*
+
+# Copy your Kubernetes manifests to the templates directory
+cp -r ../k8s-manifest/frontend-deployment.yaml helm/frontend-chart/templates/
+cp -r ../k8s-manifest/frontend-service.yaml helm/frontend-chart/templates/
+cp -r ../k8s-manifest/namespace.yaml helm/frontend-chart/templates/
+
+# Check copied files
+ls helm/frontend-chart/templates/
+```
+
+![alt text](<Screenshot 2025-04-26 155411.png>)
+
+### Key Customizations
+
+When configuring your Helm charts:
+
+1. Update `values.yaml` to include configurable parameters:
+   - Container image repository and tag
+
+   ![alt text](<Screenshot 2025-04-26 154821.png>)
+
+2. Replace hardcoded values in your kubernetest frontend-deployment.yaml file with Helm variables:
+   - Use `{{ .Values.image.repository }}:{{ .Values.image.tag }}` for image references
+
+   ![alt text](<Screenshot 2025-04-26 154923.png>)
+
+## GitHub Actions Setup
+
+### Required Secrets
+
+Add the following secrets in your GitHub repository (Settings > Secrets and variables > Actions):
+
+- `ASSUME_ROLE`: ARN of the IAM role created in the OIDC setup
+- `AWS_REGION`: Your AWS region (e.g., us-west-2)
+- `EKS_CLUSTER`: Name of your EKS cluster
+
+
+## Deployment Process
+
+Once everything is set up, your CI/CD pipeline will work as follows:
+
+1. Push code changes to the main branch of your repository
+2. GitHub Actions workflow will be automatically triggered
+3. The workflow will:
+   - Authenticate with AWS using the OIDC provider
+   - Install necessary tools (AWS CLI, kubectl, Helm)
+   - Configure kubectl to connect to your EKS cluster
+   - Deploy your application using Helm
+
+## Troubleshooting
+
+- If the GitHub Actions workflow fails with authentication errors, double-check your OIDC configuration and IAM role settings
+- For Helm deployment issues, use `helm lint` to validate your chart before deployment
+- Verify that your EKS cluster is running and accessible from GitHub Actions
+
+---
