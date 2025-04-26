@@ -1712,7 +1712,7 @@ ansible-playbook -i inventory/inventory.yaml playbooks/stack-installation.yaml
 ![alt text](<Screenshot 2025-01-01 171724.png>)
 
 ### 2. Verify Deployment
-Confirm that all ELK stack components are running:
+Confirm that all ELK stack, Prometheus & Grafana components are running:
 ```bash
 kubectl get pods -n monitoring
 kubectl get pods -n logging
@@ -1721,10 +1721,10 @@ kubectl get pods -n logging
 ## Accessing Web Interfaces
 
 ### Kibana
-Check Kibana service details:
+Check Kibana, Prometheus & Grafana service details:
 ```bash
-kubectl get svc kibana -n monitoring
-kubectl get svc kibana -n logging
+kubectl get svc -n monitoring 
+kubectl get svc -n logging
 ```
 
 ### Authentication Details
