@@ -1,0 +1,74 @@
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+  #name: backend-deployment
+  #namespace: dev
+#spec:
+  #replicas: 1
+  #selector:
+    #matchLabels:
+      #app: app1
+  #template:
+    #metadata:
+      #labels:
+        #app: app1
+        #function: backend
+    #spec:
+      #containers:
+      #- name: backend
+        #image: holadmex/3-tier-web-architecture-backend:latest
+        #ports:
+        #- containerPort: 5000
+        #env:
+        #- name: BACKEND_URL
+          #valueFrom:
+            #configMapKeyRef:
+              #name: app-config
+              #key: BACKEND_URL
+        #- name: DATABASE_URL
+          #valueFrom:
+            #configMapKeyRef:
+              #name: app-config
+              #key: DATABASE_URL
+        #resources:
+          #requests:
+            #memory: "512Mi"
+            #cpu: "500m"
+          ##limits:
+            ##memory: "2Mi"
+            ##cpu: "1"
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: app-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          #limits:
+            #memory: "2Gi"
+            #cpu: "1"
+
