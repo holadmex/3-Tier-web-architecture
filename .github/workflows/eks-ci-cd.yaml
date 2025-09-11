@@ -48,8 +48,26 @@ jobs:
           --group system:masters \
           --username github-actions || echo "Identity mapping exists"
         
+        # Wait for identity mapping to propagate
+        sleep 30
+        
+        # Remove and recreate kubeconfig
+        rm -f ~/.kube/config
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
-        kubectl get nodes
+        
+        # Verify current identity
+        aws sts get-caller-identity
+        
+        # Test kubectl access with retries
+        for i in {1..10}; do
+          if kubectl get nodes; then
+            echo "Successfully authenticated"
+            break
+          else
+            echo "Attempt $i failed, waiting 10 seconds..."
+            sleep 10
+          fi
+        done
 
     - name: Deploy with Helm
       run: |
