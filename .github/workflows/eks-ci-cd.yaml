@@ -34,24 +34,24 @@ jobs:
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         chmod +x kubectl
         sudo mv kubectl /usr/local/bin/
+        curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+        sudo mv /tmp/eksctl /usr/local/bin
 
-    - name: Verify AWS Identity
+    - name: Setup EKS Access
       run: |
-        aws sts get-caller-identity
-        aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
-
-    - name: Authenticate with EKS Cluster
-      run: |
+        echo "Using Role: ${{ secrets.ASSUME_ROLE }}"
+        
+        eksctl create iamidentitymapping \
+          --cluster ${{ secrets.EKS_CLUSTER }} \
+          --region ${{ secrets.AWS_REGION }} \
+          --arn ${{ secrets.ASSUME_ROLE }} \
+          --group system:masters \
+          --username github-actions || echo "Identity mapping exists"
+        
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
-        kubectl config current-context
-        kubectl auth can-i get pods --all-namespaces
-
-    - name: Test Cluster Connection
-      run: |
         kubectl get nodes
-        kubectl get namespaces
 
-    - name: Deploy Frontend with Helm
+    - name: Deploy with Helm
       run: |
         kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
         helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev
