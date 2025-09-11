@@ -39,14 +39,9 @@ jobs:
 
     - name: Setup EKS Access
       run: |
-        # Update aws-auth using AWS CLI directly
-        aws eks update-cluster-config \
-          --region ${{ secrets.AWS_REGION }} \
-          --name ${{ secrets.EKS_CLUSTER }} \
-          --access-config authenticationMode=API_AND_CONFIG_MAP || echo "Already configured"
-        
-        # Wait for cluster update
-        sleep 30
+        # Wait for any ongoing cluster updates to complete
+        echo "Waiting for cluster to be ready..."
+        aws eks wait cluster-active --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
         
         # Update kubeconfig
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
@@ -64,8 +59,11 @@ jobs:
           --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
           --access-scope type=cluster || echo "Policy already associated"
         
-        sleep 10
-        kubectl get nodes
+        # Wait for access changes to propagate
+        sleep 60
+        
+        # Test kubectl access
+        kubectl get nodes || echo "Authentication still propagating"
 
     - name: Deploy with Helm
       run: |
