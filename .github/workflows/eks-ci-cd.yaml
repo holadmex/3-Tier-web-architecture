@@ -67,9 +67,9 @@ jobs:
 
     - name: Deploy with Helm
       run: |
-        # Deploy with Helm managing namespace creation
-        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev --create-namespace
-        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev --create-namespace
+        # Deploy using Helm chart templates (namespace defined in chart)
+        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev
+        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev
 
 #helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
 
