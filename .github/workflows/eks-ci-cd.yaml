@@ -35,14 +35,27 @@ jobs:
         chmod +x kubectl
         sudo mv kubectl /usr/local/bin/
 
+    - name: Verify AWS Identity
+      run: |
+        aws sts get-caller-identity
+        aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
+
     - name: Authenticate with EKS Cluster
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
+        kubectl config current-context
+        kubectl auth can-i get pods --all-namespaces
+
+    - name: Test Cluster Connection
+      run: |
+        kubectl get nodes
+        kubectl get namespaces
 
     - name: Deploy Frontend with Helm
       run: |
-        helm upgrade --install frontend-release ./frontend/helm/frontend-chart
-        helm upgrade --install backend-release ./backend/helm/backend-chart
+        kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev
+        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev
 
 #helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
 
