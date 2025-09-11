@@ -39,49 +39,39 @@ jobs:
 
     - name: Setup EKS Access
       run: |
-        ASSUMED_ROLE_ARN=$(aws sts get-caller-identity --query Arn --output text)
-        echo "Assumed Role ARN: $ASSUMED_ROLE_ARN"
-        
-        eksctl create iamidentitymapping \
-          --cluster ${{ secrets.EKS_CLUSTER }} \
+        # Update aws-auth using AWS CLI directly
+        aws eks update-cluster-config \
           --region ${{ secrets.AWS_REGION }} \
-          --arn arn:aws:iam::429841094792:role/oidc-github \
-          --group system:masters \
-          --username github-actions || echo "Role mapping exists"
+          --name ${{ secrets.EKS_CLUSTER }} \
+          --access-config authenticationMode=API_AND_CONFIG_MAP || echo "Already configured"
         
-        eksctl create iamidentitymapping \
-          --cluster ${{ secrets.EKS_CLUSTER }} \
-          --region ${{ secrets.AWS_REGION }} \
-          --arn $ASSUMED_ROLE_ARN \
-          --group system:masters \
-          --username github-actions-assumed || echo "Assumed role mapping exists"
-        
-        # Wait for identity mapping to propagate
+        # Wait for cluster update
         sleep 30
         
-        # Remove and recreate kubeconfig
-        rm -f ~/.kube/config
+        # Update kubeconfig
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER }} --region ${{ secrets.AWS_REGION }}
         
-        # Verify current identity
-        aws sts get-caller-identity
+        # Grant access to the OIDC role
+        aws eks create-access-entry \
+          --cluster-name ${{ secrets.EKS_CLUSTER }} \
+          --region ${{ secrets.AWS_REGION }} \
+          --principal-arn arn:aws:iam::429841094792:role/oidc-github || echo "Access entry exists"
         
-        # Test kubectl access with retries
-        for i in {1..10}; do
-          if kubectl get nodes; then
-            echo "Successfully authenticated"
-            break
-          else
-            echo "Attempt $i failed, waiting 10 seconds..."
-            sleep 10
-          fi
-        done
+        aws eks associate-access-policy \
+          --cluster-name ${{ secrets.EKS_CLUSTER }} \
+          --region ${{ secrets.AWS_REGION }} \
+          --principal-arn arn:aws:iam::429841094792:role/oidc-github \
+          --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
+          --access-scope type=cluster || echo "Policy already associated"
+        
+        sleep 10
+        kubectl get nodes
 
     - name: Deploy with Helm
       run: |
-        kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
-        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev
-        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev
+        kubectl create namespace dev --validate=false || kubectl get namespace dev
+        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev --create-namespace
+        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev --create-namespace
 
 #helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
 
