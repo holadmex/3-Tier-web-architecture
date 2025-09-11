@@ -67,7 +67,10 @@ jobs:
 
     - name: Deploy with Helm
       run: |
-        # Deploy both to dev namespace (remove namespace templates from charts)
+        # Wait for namespace to be fully deleted if it's terminating
+        kubectl wait --for=delete namespace/dev --timeout=300s || echo "Namespace already deleted"
+        
+        # Deploy both to dev namespace
         helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev --create-namespace
         helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev
 
