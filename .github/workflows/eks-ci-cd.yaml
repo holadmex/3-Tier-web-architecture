@@ -50,12 +50,12 @@ jobs:
         aws eks create-access-entry \
           --cluster-name ${{ secrets.EKS_CLUSTER }} \
           --region ${{ secrets.AWS_REGION }} \
-          --principal-arn arn:aws:iam::429841094792:role/oidc-github || echo "Access entry exists"
+          --principal-arn ${{ secrets.ASSUME_ROLE }} || echo "Access entry exists"
         
         aws eks associate-access-policy \
           --cluster-name ${{ secrets.EKS_CLUSTER }} \
           --region ${{ secrets.AWS_REGION }} \
-          --principal-arn arn:aws:iam::429841094792:role/oidc-github \
+          --principal-arn ${{ secrets.ASSUME_ROLE }} \
           --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
           --access-scope type=cluster || echo "Policy already associated"
         
@@ -67,12 +67,9 @@ jobs:
 
     - name: Deploy with Helm
       run: |
-        # Delete existing namespace if it exists without Helm labels
-        kubectl delete namespace dev --ignore-not-found=true
-        
-        # Deploy using Helm templates (namespace included in chart)
-        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev
-        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev
+        # Deploy with Helm managing namespace creation
+        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev --create-namespace
+        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev --create-namespace
 
 #helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
 
