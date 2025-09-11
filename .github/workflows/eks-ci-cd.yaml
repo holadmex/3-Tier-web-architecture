@@ -67,9 +67,12 @@ jobs:
 
     - name: Deploy with Helm
       run: |
-        kubectl create namespace dev --validate=false || kubectl get namespace dev
-        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev --create-namespace
-        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev --create-namespace
+        # Delete existing namespace if it exists without Helm labels
+        kubectl delete namespace dev --ignore-not-found=true
+        
+        # Deploy using Helm templates (namespace included in chart)
+        helm upgrade --install frontend-release ./frontend/helm/frontend-chart --namespace dev
+        helm upgrade --install backend-release ./backend/helm/backend-chart --namespace dev
 
 #helm upgrade --install frontend-release helm/frontend-chart --namespace dev --create-namespace
 
