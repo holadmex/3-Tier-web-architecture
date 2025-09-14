@@ -1,14 +1,30 @@
-# Force delete CloudWatch log group on destroy
-resource "null_resource" "cleanup_logs" {
+# Ensure services are destroyed before VPC components
+resource "null_resource" "service_cleanup" {
   triggers = {
-    cluster_name = var.cluster_name
-    region       = var.region
+    cluster_name = aws_eks_cluster.eks.name
+    vpc_id       = aws_vpc.main.id
   }
 
   provisioner "local-exec" {
     when    = destroy
-    command = "aws logs delete-log-group --log-group-name /aws/eks/${self.triggers.cluster_name}/cluster --region ${self.triggers.region} || true"
+    command = <<-EOT
+      echo "Cleaning up services before VPC destruction..."
+      
+      # Clean up any remaining ENIs
+      aws ec2 describe-network-interfaces \
+        --filters "Name=vpc-id,Values=${self.triggers.vpc_id}" \
+        --query 'NetworkInterfaces[?Status==`available`].NetworkInterfaceId' \
+        --output text | xargs -r -n1 aws ec2 delete-network-interface --network-interface-id || true
+      
+      # Wait for cleanup
+      sleep 60
+    EOT
   }
 
-  depends_on = [aws_eks_cluster.eks]
+  # This resource depends on all services that use the cluster
+  depends_on = [
+    aws_db_instance.postgres,
+    kubernetes_secret.database,
+    kubernetes_namespace.dev
+  ]
 }

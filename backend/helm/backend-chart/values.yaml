@@ -106,15 +106,15 @@ tolerations: []
 
 affinity: {}
 
-# AWS Secrets Manager Configuration
-aws:
-  region: "us-east-1"  # Replace with your AWS region
-  secretName: "prod/rds/credentials"  # Replace with your secret name in AWS Secrets Manager
+# Database Configuration for RDS
+database:
+  host: "your-rds-endpoint.us-east-1.rds.amazonaws.com"  # Replace with actual RDS endpoint
+  password: "your-rds-password"  # Replace with actual RDS password
 
-# Database Configuration (OLD - now using Secrets Manager)
-# database:
-#   host: "your-rds-endpoint.region.rds.amazonaws.com"
-#   port: "5432"
-#   name: "ecommerce_db"
-#   username: "ecommerce"
-#   password: "your-rds-password"
+# Secret suffix from Terraform (set during deployment)
+secretSuffix: ""  # Will be overridden by Terraform output
+
+# AWS Secrets Manager Configuration (for future use)
+aws:
+  region: "us-east-1"
+  secretName: "prod/rds/credentials-{{ .Values.secretSuffix }}"  # Dynamic name from Terraform

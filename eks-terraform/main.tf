@@ -23,6 +23,29 @@ resource "aws_eks_node_group" "eks_nodes_1" {
     aws_iam_role_policy_attachment.eks_cni_policy,
     aws_iam_role_policy_attachment.eks_ec2_container_registry,
   ]
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+  
+  # Clean up controllers before destroying nodes
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOT
+      echo "Cleaning up controllers before node group destruction..."
+      
+      # Delete Helm releases
+      helm uninstall argocd -n argocd --ignore-not-found || true
+      helm uninstall kube-prometheus-stack -n monitoring --ignore-not-found || true
+      
+      # Clean up load balancers
+      kubectl get svc --all-namespaces -o json | jq -r '.items[] | select(.spec.type=="LoadBalancer") | "\(.metadata.namespace) \(.metadata.name)"' | while read ns name; do
+        kubectl delete svc "$name" -n "$ns" --ignore-not-found=true || true
+      done
+      
+      sleep 30
+    EOT
+  }
 
   tags = {
     Name = "${var.cluster_name}-node-group-1"

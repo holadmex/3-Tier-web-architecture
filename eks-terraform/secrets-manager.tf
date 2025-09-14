@@ -1,7 +1,8 @@
 # AWS Secrets Manager for RDS credentials
 resource "aws_secretsmanager_secret" "rds_credentials" {
-  name        = "prod/rds/credentials"
-  description = "RDS credentials for production application"
+  name                    = "prod/rds/credentials-${random_id.secret_suffix.hex}"
+  description             = "RDS credentials for production application"
+  recovery_window_in_days = 0  # Force immediate deletion to avoid conflicts
   
   tags = {
     Name        = "RDS Credentials"
@@ -12,7 +13,7 @@ resource "aws_secretsmanager_secret" "rds_credentials" {
 resource "aws_secretsmanager_secret_version" "rds_credentials" {
   secret_id = aws_secretsmanager_secret.rds_credentials.id
   secret_string = jsonencode({
-    DATABASE_URI = "postgresql://${aws_db_instance.postgres.username}:${random_password.db_password.result}@${aws_db_instance.postgres.endpoint}:5432/${aws_db_instance.postgres.db_name}"
+    DATABASE_URI = "postgresql://${aws_db_instance.postgres.username}:${random_password.db_password.result}@${aws_db_instance.postgres.endpoint}/${aws_db_instance.postgres.db_name}"
   })
 }
 
@@ -61,6 +62,11 @@ resource "aws_iam_policy" "external_secrets" {
 resource "aws_iam_role_policy_attachment" "external_secrets" {
   role       = aws_iam_role.external_secrets.name
   policy_arn = aws_iam_policy.external_secrets.arn
+}
+
+# Random suffix for secret name uniqueness
+resource "random_id" "secret_suffix" {
+  byte_length = 4
 }
 
 # IAM Role for Backend Service Account to access Secrets Manager

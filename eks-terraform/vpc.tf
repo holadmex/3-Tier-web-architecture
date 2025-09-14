@@ -8,6 +8,10 @@ resource "aws_vpc" "main" {
     Name                                        = "${var.cluster_name}-vpc"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
+  
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 # Internet Gateway
@@ -47,7 +51,10 @@ resource "aws_subnet" "private" {
     Name                                        = "${var.cluster_name}-private-${count.index + 1}"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
     "kubernetes.io/role/internal-elb"           = "1"
-
+  }
+  
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -71,6 +78,10 @@ resource "aws_nat_gateway" "main" {
 
   tags = {
     Name = "${var.cluster_name}-nat"
+  }
+  
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

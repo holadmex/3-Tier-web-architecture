@@ -19,6 +19,12 @@ resource "aws_eks_cluster" "eks" {
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   
+  # Authentication mode for access entries
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+  
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy,
     aws_cloudwatch_log_group.eks

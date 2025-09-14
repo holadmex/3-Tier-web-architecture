@@ -28,3 +28,13 @@ output "rds_secret_arn" {
   description = "AWS Secrets Manager secret ARN for RDS credentials"
   value       = aws_secretsmanager_secret.rds_credentials.arn
 }
+
+output "rds_secret_suffix" {
+  description = "Random suffix for RDS secret name"
+  value       = random_id.secret_suffix.hex
+}
+
+output "rds_secret_name" {
+  description = "Full RDS secret name with suffix"
+  value       = aws_secretsmanager_secret.rds_credentials.name
+}
