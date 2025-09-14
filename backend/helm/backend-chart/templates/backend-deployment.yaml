@@ -61,6 +61,19 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         ports:
         - containerPort: 5000
+        env:
+        # Non-sensitive config from ConfigMap
+        - name: BACKEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: BACKEND_URL
+        # RDS credentials from Terraform-created secret
+        - name: DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: database-secret
+              key: DATABASE_URL
         envFrom:
         - configMapRef:
             name: app-config

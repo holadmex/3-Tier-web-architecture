@@ -13,3 +13,18 @@ output "eks_cluster_ca_cert" {
 output "eks_cluster_arn" {
   value = aws_eks_cluster.eks.arn
 }
+
+output "backend_secrets_role_arn" {
+  description = "IAM role ARN for backend service account to access Secrets Manager"
+  value       = aws_iam_role.backend_secrets.arn
+}
+
+output "external_secrets_role_arn" {
+  description = "IAM role ARN for External Secrets Operator"
+  value       = aws_iam_role.external_secrets.arn
+}
+
+output "rds_secret_arn" {
+  description = "AWS Secrets Manager secret ARN for RDS credentials"
+  value       = aws_secretsmanager_secret.rds_credentials.arn
+}
